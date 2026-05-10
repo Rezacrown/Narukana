@@ -9,10 +9,38 @@ export function parsePlanId(planContent) {
 }
 export function createEmptyTasksLedger(planId) {
     return {
-        planId,
-        planGeneratedAt: new Date().toISOString(),
+        schemaVersion: 1,
+        meta: {
+            planId,
+            planGeneratedAt: new Date().toISOString(),
+        },
         tasks: [],
     };
+}
+export function parseTasksLedger(raw) {
+    const parsed = JSON.parse(raw);
+    if (parsed &&
+        parsed.schemaVersion === 1 &&
+        parsed.meta &&
+        typeof parsed.meta.planId === "string" &&
+        typeof parsed.meta.planGeneratedAt === "string" &&
+        Array.isArray(parsed.tasks)) {
+        return parsed;
+    }
+    if (parsed &&
+        typeof parsed.planId === "string" &&
+        typeof parsed.planGeneratedAt === "string" &&
+        Array.isArray(parsed.tasks)) {
+        return {
+            schemaVersion: 1,
+            meta: {
+                planId: parsed.planId,
+                planGeneratedAt: parsed.planGeneratedAt,
+            },
+            tasks: parsed.tasks,
+        };
+    }
+    throw new Error("Invalid tasks.json schema. Expected v1 with meta.planId and tasks[].definition/state.");
 }
 export function createTask(definition) {
     return {

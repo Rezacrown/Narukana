@@ -7,7 +7,7 @@ export declare const narukanaExecuteTask: {
             status: "status";
             release: "release";
         }>;
-        name: import("zod").ZodDefault<import("zod").ZodOptional<import("zod").ZodString>>;
+        name: import("zod").ZodOptional<import("zod").ZodString>;
         leaseMinutes: import("zod").ZodDefault<import("zod").ZodOptional<import("zod").ZodNumber>>;
         taskId: import("zod").ZodOptional<import("zod").ZodString>;
         status: import("zod").ZodOptional<import("zod").ZodEnum<{
@@ -15,17 +15,16 @@ export declare const narukanaExecuteTask: {
             done: "done";
             failed: "failed";
             blocked: "blocked";
-            skipped: "skipped";
         }>>;
         fatalReason: import("zod").ZodOptional<import("zod").ZodString>;
         evidence: import("zod").ZodOptional<import("zod").ZodString>;
     };
     execute(args: {
         action: "next" | "report" | "status" | "release";
-        name: string;
         leaseMinutes: number;
+        name?: string | undefined;
         taskId?: string | undefined;
-        status?: "in_progress" | "done" | "failed" | "blocked" | "skipped" | undefined;
+        status?: "in_progress" | "done" | "failed" | "blocked" | undefined;
         fatalReason?: string | undefined;
         evidence?: string | undefined;
     }, context: import("@opencode-ai/plugin").ToolContext): Promise<import("@opencode-ai/plugin").ToolResult>;

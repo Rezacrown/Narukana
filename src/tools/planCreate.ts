@@ -1,7 +1,14 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists, createBackupPath } from "../core/fileSystem";
 import { NARUKANA_UI_ACTIONS_START, NARUKANA_UI_ACTIONS_END } from "../core/constants";
-import { generateTaskId, parsePlanId } from "../core/planFormat";
+import {
+  createEmptyTasksLedger,
+  createTask,
+  generateTaskId,
+  parsePlanId,
+  parseTasksFromPlan,
+} from "../core/planFormat";
+import { generateMemoryMarkdown } from "../core/memoryFormat";
 import { getNarukanaFs } from "../core/narukanaFs";
 
 interface UIAction {
@@ -117,7 +124,22 @@ export const narukanaPlanCreate = tool({
       await fs.writeFile(paths.plan(), planContent);
 
       const planId = parsePlanId(planContent);
-      return `Generated .narukana/plan.md (planId: ${planId})\n\nTasks generated:\n- UI tasks: ${uiActions.length}\n- Contract tasks: ${contractOps.length}\n- Integration task: 1`;
+      const taskDefinitions = parseTasksFromPlan(planContent);
+      const ledger = createEmptyTasksLedger(planId);
+      for (const taskDef of taskDefinitions) ledger.tasks.push(createTask(taskDef));
+
+      const memoryContent = generateMemoryMarkdown({
+        planContent,
+        contextContent: await fs.readFile(paths.context()),
+        uiSpecContent: uiContent,
+        contractContent,
+        integrationContent: await fs.readFile(paths.integration()),
+        ledger,
+        planId,
+      });
+      await fs.writeFile(paths.memory(), memoryContent);
+
+      return `Generated .narukana/plan.md (planId: ${planId}) and .narukana/memory.md\n\nTasks generated:\n- UI tasks: ${uiActions.length}\n- Contract tasks: ${contractOps.length}\n- Integration task: 1`;
     } catch (error: any) {
       return { output: `Error generating plan: ${error.message}`, metadata: { error: true } };
     }

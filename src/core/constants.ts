@@ -14,6 +14,7 @@ export const INTEGRATION_FILE = "integration.md";
 
 export const PLAN_FILE = "plan.md";
 export const TASKS_FILE = "tasks.json";
+export const MEMORY_FILE = "memory.md";
 
 export const COMMANDS_DIR = "commands";
 

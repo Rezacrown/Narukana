@@ -22,13 +22,17 @@ export interface Task {
     state: TaskState;
 }
 export interface TasksLedger {
-    planId: string;
-    planGeneratedAt: string;
+    schemaVersion: 1;
+    meta: {
+        planId: string;
+        planGeneratedAt: string;
+    };
     tasks: Task[];
 }
 export declare function generateTaskId(index: number): string;
 export declare function parsePlanId(planContent: string): string;
 export declare function createEmptyTasksLedger(planId: string): TasksLedger;
+export declare function parseTasksLedger(raw: string): TasksLedger;
 export declare function createTask(definition: TaskDefinition): Task;
 export declare function parseTasksFromPlan(planContent: string): TaskDefinition[];
 //# sourceMappingURL=planFormat.d.ts.map

@@ -6,9 +6,12 @@ import {
   parsePlanId,
   createEmptyTasksLedger,
   createTask,
+  parseTasksLedger,
   type Task,
+  type TasksLedger,
 } from "../core/planFormat";
 import { getNarukanaFs } from "../core/narukanaFs";
+import { generateMemoryMarkdown, parseMemory } from "../core/memoryFormat";
 
 function findEligibleTasks(tasks: Task[]): Task | null {
   for (const task of tasks) {
@@ -42,24 +45,65 @@ function initializeTasksFromPlan(planContent: string) {
   return ledger;
 }
 
+async function refreshMemory(fs: any, planContent: string, ledger: TasksLedger, planId: string): Promise<void> {
+  const memoryContent = generateMemoryMarkdown({
+    planContent,
+    contextContent: await fs.readFile(paths.context()),
+    uiSpecContent: await fs.readFile(paths.uiSpec()),
+    contractContent: await fs.readFile(paths.contractJson()),
+    integrationContent: await fs.readFile(paths.integration()),
+    ledger,
+    planId,
+  });
+  await fs.writeFile(paths.memory(), memoryContent);
+}
+
+function validateActionArgs(args: {
+  action: "next" | "report" | "status" | "release";
+  name?: string;
+  taskId?: string;
+  status?: "in_progress" | "done" | "failed" | "blocked";
+}): string | null {
+  if ((args.action === "next" || args.action === "report" || args.action === "release") && !args.name) {
+    return `action \"${args.action}\" requires \"name\"`;
+  }
+
+  if (args.action === "report") {
+    if (!args.taskId) return 'action "report" requires "taskId"';
+    if (!args.status) return 'action "report" requires "status"';
+    if (!["in_progress", "done", "failed", "blocked"].includes(args.status)) {
+      return 'action "report" allows status only: in_progress | done | failed | blocked';
+    }
+  }
+
+  if (args.action === "release" && !args.taskId) {
+    return 'action "release" requires "taskId"';
+  }
+
+  return null;
+}
+
 export const narukanaExecuteTask = tool({
   description: "Execute task actions: next, report, status, release",
   args: {
     action: tool.schema.enum(["next", "report", "status", "release"]),
-    name: tool.schema.string().optional().default("agent"),
+    name: tool.schema.string().optional(),
     leaseMinutes: tool.schema.number().optional().default(DEFAULT_LEASE_MINUTES),
     taskId: tool.schema.string().optional(),
-    status: tool.schema.enum(["in_progress", "done", "failed", "blocked", "skipped"]).optional(),
+    status: tool.schema.enum(["in_progress", "done", "failed", "blocked"]).optional(),
     fatalReason: tool.schema.string().optional(),
     evidence: tool.schema.string().optional(),
   },
   execute: async (args, ctx) => {
     const fs = getNarukanaFs(ctx.worktree);
     const action = args.action;
-    const name = args.name ?? "agent";
+    const name = args.name;
     const leaseMinutes = args.leaseMinutes ?? DEFAULT_LEASE_MINUTES;
 
     try {
+      const argError = validateActionArgs(args as any);
+      if (argError) return { output: argError, metadata: { error: true } };
+
       if (!(await fileExists(fs, paths.plan()))) {
         return { output: "No plan found at .narukana/plan.md. Run narukana_plan_create first.", metadata: { error: true } };
       }
@@ -67,13 +111,31 @@ export const narukanaExecuteTask = tool({
       const planContent = await fs.readFile(paths.plan());
       const planId = parsePlanId(planContent);
 
-      let ledger: any;
+      let ledger: TasksLedger;
       if (await fileExists(fs, paths.tasks())) {
-        ledger = JSON.parse(await fs.readFile(paths.tasks()));
-        if (ledger.planId !== planId) ledger = initializeTasksFromPlan(planContent);
+        ledger = parseTasksLedger(await fs.readFile(paths.tasks()));
+        if (ledger.meta.planId !== planId) ledger = initializeTasksFromPlan(planContent);
       } else {
         ledger = initializeTasksFromPlan(planContent);
       }
+
+      let memoryStatus: "fresh" | "refreshed" = "fresh";
+      if (await fileExists(fs, paths.memory())) {
+        const memoryRaw = await fs.readFile(paths.memory());
+        try {
+            const parsedMemory = parseMemory(memoryRaw);
+            if (parsedMemory.metadata.planId !== planId) {
+              await refreshMemory(fs, planContent, ledger, planId);
+              memoryStatus = "refreshed";
+            }
+          } catch {
+            await refreshMemory(fs, planContent, ledger, planId);
+            memoryStatus = "refreshed";
+          }
+        } else {
+          await refreshMemory(fs, planContent, ledger, planId);
+          memoryStatus = "refreshed";
+        }
 
       if (action === "next") {
         const eligible = findEligibleTasks(ledger.tasks);
@@ -86,22 +148,23 @@ export const narukanaExecuteTask = tool({
         eligible.state.claimedBy = name;
 
         await fs.writeFile(paths.tasks(), JSON.stringify(ledger, null, 2));
-        return `Claimed task ${eligible.definition.id}: ${eligible.definition.title}`;
+        await refreshMemory(fs, planContent, ledger, planId);
+        memoryStatus = "refreshed";
+
+        const specRefs = eligible.definition.specRefs.join(", ") || "(none)";
+        return `Claimed task ${eligible.definition.id}: ${eligible.definition.title}\nSpec refs: ${specRefs}\nMemory: ${memoryStatus}`;
       }
 
       if (action === "status") {
-        const counts = (status: string) => ledger.tasks.filter((t: any) => t.state.status === status).length;
-        return `Task Status (planId: ${planId}):\n\n- Todo: ${counts("todo")}\n- In Progress: ${counts("in_progress")}\n- Done: ${counts("done")}\n- Failed: ${counts("failed")}\n- Blocked: ${counts("blocked")}\n- Total: ${ledger.tasks.length}`;
+        const counts = (status: string) => ledger.tasks.filter((t) => t.state.status === status).length;
+        return `Task Status (planId: ${planId}):\n\n- Todo: ${counts("todo")}\n- In Progress: ${counts("in_progress")}\n- Done: ${counts("done")}\n- Failed: ${counts("failed")}\n- Blocked: ${counts("blocked")}\n- Total: ${ledger.tasks.length}\n- Memory: ${memoryStatus}`;
       }
 
       if (action === "report") {
-        const taskId = args.taskId;
-        const status = args.status;
-        if (!taskId || !status) {
-          return { output: "report requires taskId and status", metadata: { error: true } };
-        }
+        const taskId = args.taskId as string;
+        const status = args.status as "in_progress" | "done" | "failed" | "blocked";
 
-        const task = ledger.tasks.find((t: any) => t.definition.id === taskId);
+        const task = ledger.tasks.find((t) => t.definition.id === taskId);
         if (!task) return { output: `Task ${taskId} not found`, metadata: { error: true } };
 
         task.state.status = status;
@@ -113,14 +176,15 @@ export const narukanaExecuteTask = tool({
         }
 
         await fs.writeFile(paths.tasks(), JSON.stringify(ledger, null, 2));
-        return `Task ${taskId} status updated to: ${status}`;
+        await refreshMemory(fs, planContent, ledger, planId);
+        return `Task ${taskId} status updated to: ${status}\nMemory: refreshed`;
       }
 
       if (action === "release") {
         const taskId = args.taskId;
         if (!taskId) return { output: "release requires taskId", metadata: { error: true } };
 
-        const task = ledger.tasks.find((t: any) => t.definition.id === taskId);
+        const task = ledger.tasks.find((t) => t.definition.id === taskId);
         if (!task) return { output: `Task ${taskId} not found`, metadata: { error: true } };
         if (task.state.status !== "in_progress") return { output: `Task ${taskId} is not in progress`, metadata: { error: true } };
 
@@ -130,7 +194,8 @@ export const narukanaExecuteTask = tool({
         task.state.claimedBy = undefined;
 
         await fs.writeFile(paths.tasks(), JSON.stringify(ledger, null, 2));
-        return `Task ${taskId} released`;
+        await refreshMemory(fs, planContent, ledger, planId);
+        return `Task ${taskId} released\nMemory: refreshed`;
       }
 
       return { output: `Unknown action: ${action}`, metadata: { error: true } };

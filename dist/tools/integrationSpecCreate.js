@@ -1,7 +1,7 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists, createBackupPath } from "../core/fileSystem";
 import { getNarukanaFs } from "../core/narukanaFs";
-const integrationTemplate = `# Integration Flow\n\n## Runtime Flow\nUI action → operation call → response → UI state update\n\n## Mappings\n- action: (UI action name)\n  calls:\n    - op: (operation name)\n  success:\n    - ui: (success state update)\n  error:\n    - ui: (error state update)\n\n## Contract Operations\n- (operation name)\n\n## Error Handling\n- Standardize error surface to user-friendly messages\n\n## Observability\n- Log errors with action + op + correlation id\n`;
+const integrationTemplate = `# Integration Flow\n\n## Runtime Flow\nUI action -> operation call -> response -> UI state update\n\n## UI Actions\n- (UI action name)\n\n## Mappings\n- action: (UI action name)\n  calls:\n    - op: (operation name)\n  success:\n    - ui: (success state update)\n  error:\n    - ui: (error state update)\n\n## Contract Operations\n- (operation name)\n\n## Error Handling\n- Standardize error surface to user-friendly messages\n\n## Observability\n- Log errors with action + op + correlation id\n`;
 export const narukanaIntegrationSpecCreate = tool({
     description: "Create or regenerate integration.md spec in .narukana/specs/",
     args: {

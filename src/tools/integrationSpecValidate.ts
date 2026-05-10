@@ -12,6 +12,7 @@ function validateIntegrationSpec(content: string): {
 
   const required = [
     "## Runtime Flow",
+    "## UI Actions",
     "## Mappings",
     "## Contract Operations",
     "## Error Handling",
@@ -41,6 +42,23 @@ export const narukanaIntegrationSpecValidate = tool({
 
       const content = await fs.readFile(paths.integration());
       const result = validateIntegrationSpec(content);
+
+      if (await fileExists(fs, paths.contractJson())) {
+        try {
+          const contract = JSON.parse(await fs.readFile(paths.contractJson()));
+          const ops = contract?.operations && typeof contract.operations === "object"
+            ? Object.keys(contract.operations)
+            : [];
+          const unreferenced = ops.filter((op) => !content.includes(op));
+          if (unreferenced.length > 0) {
+            result.warnings.push(
+              `Operations in contract.json not referenced in integration.md: ${unreferenced.join(", ")}`,
+            );
+          }
+        } catch {
+          result.warnings.push("Could not parse contract.json while checking operation references.");
+        }
+      }
 
       let out = `Validation results for .narukana/specs/integration.md:\n\n`;
       if (result.errors.length) {

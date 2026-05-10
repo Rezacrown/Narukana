@@ -10,6 +10,7 @@ export const CONTRACT_DETAIL_FILE = "contract-detail.md";
 export const INTEGRATION_FILE = "integration.md";
 export const PLAN_FILE = "plan.md";
 export const TASKS_FILE = "tasks.json";
+export const MEMORY_FILE = "memory.md";
 export const COMMANDS_DIR = "commands";
 export const NARUKANA_UI_ACTIONS_START = "<!-- narukana-ui-actions -->";
 export const NARUKANA_UI_ACTIONS_END = "<!-- /narukana-ui-actions -->";

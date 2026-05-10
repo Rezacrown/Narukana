@@ -28,8 +28,11 @@ export interface Task {
 }
 
 export interface TasksLedger {
-  planId: string;
-  planGeneratedAt: string;
+  schemaVersion: 1;
+  meta: {
+    planId: string;
+    planGeneratedAt: string;
+  };
   tasks: Task[];
 }
 
@@ -44,10 +47,46 @@ export function parsePlanId(planContent: string): string {
 
 export function createEmptyTasksLedger(planId: string): TasksLedger {
   return {
-    planId,
-    planGeneratedAt: new Date().toISOString(),
+    schemaVersion: 1,
+    meta: {
+      planId,
+      planGeneratedAt: new Date().toISOString(),
+    },
     tasks: [],
   };
+}
+
+export function parseTasksLedger(raw: string): TasksLedger {
+  const parsed = JSON.parse(raw);
+
+  if (
+    parsed &&
+    parsed.schemaVersion === 1 &&
+    parsed.meta &&
+    typeof parsed.meta.planId === "string" &&
+    typeof parsed.meta.planGeneratedAt === "string" &&
+    Array.isArray(parsed.tasks)
+  ) {
+    return parsed as TasksLedger;
+  }
+
+  if (
+    parsed &&
+    typeof parsed.planId === "string" &&
+    typeof parsed.planGeneratedAt === "string" &&
+    Array.isArray(parsed.tasks)
+  ) {
+    return {
+      schemaVersion: 1,
+      meta: {
+        planId: parsed.planId,
+        planGeneratedAt: parsed.planGeneratedAt,
+      },
+      tasks: parsed.tasks,
+    };
+  }
+
+  throw new Error("Invalid tasks.json schema. Expected v1 with meta.planId and tasks[].definition/state.");
 }
 
 export function createTask(definition: TaskDefinition): Task {

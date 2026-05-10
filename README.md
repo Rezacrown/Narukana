@@ -13,14 +13,14 @@
   <img src="assets/narukana-hero.svg" alt="Narukana Spec Engine Banner" width="860" />
 </p>
 
-# Narukana v1.0.0
+# Narukana
 
 Narukana is a standalone spec engine for OpenCode.
 
 It exists to solve a common problem: teams and agents often start coding before the spec is stable. Narukana keeps work aligned by making specs the source of truth, generating an immutable plan from those specs, and coordinating execution through a derived task ledger.
 
 > [!IMPORTANT]
-> Narukana v1.0.0 is its own product. This README does not position it as a migration or upgrade from any previous framework.
+> Narukana is its own product. This README does not position it as a migration or upgrade from any previous framework.
 
 ## What Narukana does
 
@@ -28,6 +28,7 @@ It exists to solve a common problem: teams and agents often start coding before 
 - Treats `.narukana/context/*` and `.narukana/specs/*` as editable source of truth.
 - Generates `.narukana/plan.md` as a derived, immutable artifact.
 - Generates `.narukana/tasks.json` from `plan.md` for execution coordination.
+- Generates `.narukana/memory.md` as a derived brief for fresh agent sessions.
 - Provides read-only validators for both spec quality and implementation evidence.
 
 ## Spec Engine Workflow
@@ -46,7 +47,9 @@ flowchart TD
 
   E --> P["Generate Plan\n.narukana/plan.md (immutable)"]
   P --> T["Task Ledger\n.narukana/tasks.json (derived)"]
+  P --> M["Memory Brief\n.narukana/memory.md (derived)"]
   T --> X["Execution\nnext / report / status / release"]
+  X --> M
 ```
 
 ---
@@ -211,12 +214,19 @@ Flags used in this context:
   - `status`: show ledger summary.
   - `report`: update one task status.
   - `release`: release one claimed task.
-- `name` (optional): claimer identity (agent/person).
+- `name` (required for `next`, `report`, `release`): claimer identity (agent/person).
 - `leaseMinutes` (optional, default `120`): claim duration.
 - `taskId` (required for `report` and `release`): task ID like `T-001`.
-- `status` (for `report`): `in_progress | done | failed | blocked | skipped`.
+- `status` (for `report`): `in_progress | done | failed | blocked`.
 - `fatalReason` (optional): reason when reporting failure.
 - `evidence` (optional): completion evidence.
+
+Memory behavior in execution:
+
+- `narukana_plan_create` writes both `.narukana/plan.md` and `.narukana/memory.md`.
+- `narukana_execute_task` checks memory frontmatter `planId` against current plan hash.
+- If memory is missing, stale, or invalid, Narukana auto-refreshes memory before continuing.
+- Source of truth remains `.narukana/context/*`, `.narukana/specs/*`, `.narukana/plan.md`, and `.narukana/tasks.json`.
 
 ### C) Spec Validation (Read-only)
 
@@ -243,6 +253,8 @@ Flags used in this context:
 
 - No special flags.
 
+`narukana_sync` also reports whether `.narukana/memory.md` exists and whether it is in sync with current `plan.md`.
+
 ---
 
 ## Workspace layout
@@ -260,7 +272,14 @@ Flags used in this context:
     integration.md
   plan.md
   tasks.json
+  memory.md
 ```
+
+## Multi-agent consistency guidance
+
+- Treat `memory.md` as a generated brief, not an editable requirements file.
+- Fresh agents should quickly check memory first, then confirm plan/task IDs align.
+- Never move source-of-truth decisions into memory; edit context/specs/plan/tasks instead.
 
 ## Development scripts
 

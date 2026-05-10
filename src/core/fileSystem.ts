@@ -12,6 +12,7 @@ import {
   INTEGRATION_FILE,
   PLAN_FILE,
   TASKS_FILE,
+  MEMORY_FILE,
 } from "./constants";
 
 export function getWorkspacePath(...segments: string[]): string {
@@ -39,6 +40,7 @@ export const paths = {
   integration: () => getSpecsPath(INTEGRATION_FILE),
   plan: () => getWorkspacePath(PLAN_FILE),
   tasks: () => getWorkspacePath(TASKS_FILE),
+  memory: () => getWorkspacePath(MEMORY_FILE),
 };
 
 export function getBasename(filePath: string): string {

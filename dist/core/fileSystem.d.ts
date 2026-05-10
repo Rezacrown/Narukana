@@ -14,6 +14,7 @@ export declare const paths: {
     integration: () => string;
     plan: () => string;
     tasks: () => string;
+    memory: () => string;
 };
 export declare function getBasename(filePath: string): string;
 export declare function fileExists(fs: any, path: string): Promise<boolean>;

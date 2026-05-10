@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists } from "../core/fileSystem";
 import { getNarukanaFs } from "../core/narukanaFs";
+import { parsePlanId } from "../core/planFormat";
+import { parseMemory } from "../core/memoryFormat";
 export const narukanaSync = tool({
     description: "Verify presence of required files up to plan (read-only, no file writes)",
     args: {},
@@ -33,6 +35,24 @@ export const narukanaSync = tool({
                 out += "- narukana_ui_validate\n";
                 out += "- narukana_contract_validate\n";
                 out += "- narukana_integration_validate\n";
+            }
+            const hasMemory = await fileExists(fs, paths.memory());
+            out += `\nMemory:\n- Present: ${hasMemory ? "yes" : "no"}`;
+            if (hasMemory) {
+                try {
+                    const memory = parseMemory(await fs.readFile(paths.memory()));
+                    if (await fileExists(fs, paths.plan())) {
+                        const planId = parsePlanId(await fs.readFile(paths.plan()));
+                        const status = memory.metadata.planId === planId ? "in sync" : "stale";
+                        out += `\n- Status: ${status}\n- Memory planId: ${memory.metadata.planId}\n- Current planId: ${planId}`;
+                    }
+                    else {
+                        out += `\n- Status: unknown (plan.md missing)\n- Memory planId: ${memory.metadata.planId}`;
+                    }
+                }
+                catch (error) {
+                    out += `\n- Status: invalid (${error.message})`;
+                }
             }
             return out;
         }

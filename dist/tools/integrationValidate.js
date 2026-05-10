@@ -24,9 +24,16 @@ function parseContractOperations(content) {
     return Object.keys(data.operations);
 }
 function parseIntegrationMappings(content) {
-    const result = { actions: [], operations: [] };
+    const result = {
+        actions: [],
+        operations: [],
+        mappedOperations: [],
+        actionToOperations: {},
+        hasMappingsSection: false,
+    };
     const mappingsMatch = content.match(/## Mappings\n([\s\S]*?)(?:\n##|$)/);
     if (mappingsMatch) {
+        result.hasMappingsSection = true;
         const lines = mappingsMatch[1].split("\n");
         let currentAction = "";
         for (const line of lines) {
@@ -35,12 +42,18 @@ function parseIntegrationMappings(content) {
                 currentAction = actionMatch[1].trim();
                 if (!result.actions.includes(currentAction))
                     result.actions.push(currentAction);
+                result.actionToOperations[currentAction] = result.actionToOperations[currentAction] || [];
             }
             const opMatch = line.trim().match(/^-\s+op:\s*(.+)$/);
             if (opMatch && currentAction) {
                 const op = opMatch[1].trim();
                 if (!result.operations.includes(op))
                     result.operations.push(op);
+                if (!result.mappedOperations.includes(op))
+                    result.mappedOperations.push(op);
+                if (!result.actionToOperations[currentAction].includes(op)) {
+                    result.actionToOperations[currentAction].push(op);
+                }
             }
         }
     }
@@ -106,9 +119,21 @@ export const narukanaIntegrationValidate = tool({
             const noBackendEvidence = [];
             const unusedOps = [];
             const unmappedActions = [];
+            if (!integration.hasMappingsSection) {
+                missingMappingsInIntegration.push("## Mappings section is missing");
+            }
+            else {
+                if (integration.actions.length === 0) {
+                    missingMappingsInIntegration.push("No '- action:' entries were found under ## Mappings");
+                }
+            }
             for (const action of uiActions) {
                 if (!integration.actions.includes(action))
                     unmappedActions.push(action);
+                const opsForAction = integration.actionToOperations[action] || [];
+                if (integration.hasMappingsSection && integration.actions.includes(action) && opsForAction.length === 0) {
+                    missingMappingsInIntegration.push(`Action \"${action}\" has no mapped operations`);
+                }
             }
             for (const op of contractOps) {
                 if (!integration.operations.includes(op))
@@ -123,16 +148,12 @@ export const narukanaIntegrationValidate = tool({
                 if (!ok)
                     noUiEvidence.push(action);
             }
-            for (const op of integration.operations) {
+            for (const op of integration.mappedOperations) {
                 if (op === "(none)" || op === "none")
                     continue;
                 const ok = await searchInDirectory(fs, config.paths.contractRoot, [op]);
                 if (!ok)
                     noBackendEvidence.push(op);
-            }
-            // Mappings section presence check
-            if (!integrationMd.includes("## Mappings")) {
-                missingMappingsInIntegration.push("## Mappings section is missing");
             }
             let out = "Integration validation results:\n\n";
             if (missingMappingsInIntegration.length) {
