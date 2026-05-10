@@ -1,0 +1,30 @@
+export const WORKSPACE_DIR = ".narukana";
+
+export const NARUKANA_JSON = "narukana.json";
+
+export const CONTEXT_DIR = "context";
+export const SPECS_DIR = "specs";
+
+export const CONTEXT_FILE = "context.md";
+export const IDEA_FILE = "idea.md";
+export const UI_SPEC_FILE = "ui.md";
+export const CONTRACT_JSON_FILE = "contract.json";
+export const CONTRACT_DETAIL_FILE = "contract-detail.md";
+export const INTEGRATION_FILE = "integration.md";
+
+export const PLAN_FILE = "plan.md";
+export const TASKS_FILE = "tasks.json";
+
+export const COMMANDS_DIR = "commands";
+
+export const NARUKANA_UI_ACTIONS_START = "<!-- narukana-ui-actions -->";
+export const NARUKANA_UI_ACTIONS_END = "<!-- /narukana-ui-actions -->";
+export const NARUKANA_UI_DATA_START = "<!-- narukana-ui-data -->";
+export const NARUKANA_UI_DATA_END = "<!-- /narukana-ui-data -->";
+
+export const TASK_ID_PREFIX = "T-";
+export const TASK_ID_WIDTH = 3;
+
+export const DEFAULT_LEASE_MINUTES = 120;
+
+export const SCHEMA_VERSION = 1;

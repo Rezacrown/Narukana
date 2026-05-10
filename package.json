@@ -1,0 +1,25 @@
+{
+  "name": "narukana",
+  "version": "1.0.0",
+  "description": "Spec → Plan → Tasks engine for personal DX and agentic development",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "typecheck": "bun x tsc -p tsconfig.json --noEmit",
+    "build:ts": "bun x tsc -p tsconfig.json",
+    "build:command": "bun run scripts/build-command-wrappers.ts",
+    "build": "bun run build:ts && bun run build:command",
+    "dev": "bun run build:ts --watch",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "bun-types": "^1.3.13",
+    "typescript": "^5.0.0"
+  },
+  "keywords": ["opencode", "plugin", "spec", "plan", "tasks"],
+  "license": "MIT"
+}
