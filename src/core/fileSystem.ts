@@ -13,6 +13,7 @@ import {
   PLAN_FILE,
   TASKS_FILE,
   MEMORY_FILE,
+  CODEBASE_INVENTORY_FILE,
 } from "./constants";
 
 export function getWorkspacePath(...segments: string[]): string {
@@ -41,6 +42,7 @@ export const paths = {
   plan: () => getWorkspacePath(PLAN_FILE),
   tasks: () => getWorkspacePath(TASKS_FILE),
   memory: () => getWorkspacePath(MEMORY_FILE),
+  codebaseInventory: () => getWorkspacePath(CODEBASE_INVENTORY_FILE),
 };
 
 export function getBasename(filePath: string): string {

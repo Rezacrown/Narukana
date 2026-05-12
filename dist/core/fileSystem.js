@@ -1,5 +1,5 @@
 import { basename, join } from "path";
-import { WORKSPACE_DIR, NARUKANA_JSON, CONTEXT_DIR, SPECS_DIR, CONTEXT_FILE, IDEA_FILE, UI_SPEC_FILE, CONTRACT_JSON_FILE, CONTRACT_DETAIL_FILE, INTEGRATION_FILE, PLAN_FILE, TASKS_FILE, MEMORY_FILE, } from "./constants";
+import { WORKSPACE_DIR, NARUKANA_JSON, CONTEXT_DIR, SPECS_DIR, CONTEXT_FILE, IDEA_FILE, UI_SPEC_FILE, CONTRACT_JSON_FILE, CONTRACT_DETAIL_FILE, INTEGRATION_FILE, PLAN_FILE, TASKS_FILE, MEMORY_FILE, CODEBASE_INVENTORY_FILE, } from "./constants";
 export function getWorkspacePath(...segments) {
     return join(WORKSPACE_DIR, ...segments);
 }
@@ -23,6 +23,7 @@ export const paths = {
     plan: () => getWorkspacePath(PLAN_FILE),
     tasks: () => getWorkspacePath(TASKS_FILE),
     memory: () => getWorkspacePath(MEMORY_FILE),
+    codebaseInventory: () => getWorkspacePath(CODEBASE_INVENTORY_FILE),
 };
 export function getBasename(filePath) {
     return basename(filePath);

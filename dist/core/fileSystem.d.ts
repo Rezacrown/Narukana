@@ -15,6 +15,7 @@ export declare const paths: {
     plan: () => string;
     tasks: () => string;
     memory: () => string;
+    codebaseInventory: () => string;
 };
 export declare function getBasename(filePath: string): string;
 export declare function fileExists(fs: any, path: string): Promise<boolean>;

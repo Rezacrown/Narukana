@@ -57,6 +57,14 @@ const tools = [
     },
   },
   {
+    name: "narukana_spec_from_codebase_create",
+    description: "Scan an existing codebase and generate Narukana-compliant spec files",
+    params: {
+      write: "boolean (default: false) - false = preview only, true = write all spec files",
+      regenerate: "boolean (default: false) - overwrite existing spec files if true",
+    },
+  },
+  {
     name: "narukana_execute_task",
     description: "Execute task actions: next, report, status, release",
     params: {

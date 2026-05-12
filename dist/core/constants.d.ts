@@ -11,6 +11,7 @@ export declare const INTEGRATION_FILE = "integration.md";
 export declare const PLAN_FILE = "plan.md";
 export declare const TASKS_FILE = "tasks.json";
 export declare const MEMORY_FILE = "memory.md";
+export declare const CODEBASE_INVENTORY_FILE = "codebase-inventory.json";
 export declare const COMMANDS_DIR = "commands";
 export declare const NARUKANA_UI_ACTIONS_START = "<!-- narukana-ui-actions -->";
 export declare const NARUKANA_UI_ACTIONS_END = "<!-- /narukana-ui-actions -->";

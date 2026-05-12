@@ -16,6 +16,8 @@ export const PLAN_FILE = "plan.md";
 export const TASKS_FILE = "tasks.json";
 export const MEMORY_FILE = "memory.md";
 
+export const CODEBASE_INVENTORY_FILE = "codebase-inventory.json";
+
 export const COMMANDS_DIR = "commands";
 
 export const NARUKANA_UI_ACTIONS_START = "<!-- narukana-ui-actions -->";

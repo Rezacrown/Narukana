@@ -3,6 +3,7 @@ import narukanaContextCreate from "./tools/contextCreate";
 import narukanaUiSpecCreate from "./tools/uiSpecCreate";
 import narukanaContractSpecCreate from "./tools/contractSpecCreate";
 import narukanaIntegrationSpecCreate from "./tools/integrationSpecCreate";
+import narukanaSpecFromCodebaseCreate from "./tools/specFromCodebaseCreate";
 import narukanaPlanCreate from "./tools/planCreate";
 import narukanaExecuteTask from "./tools/executeTask";
 import narukanaSync from "./tools/sync";
@@ -23,6 +24,7 @@ const NarukanaPlugin = {
                 narukana_contract_spec_create: narukanaContractSpecCreate,
                 narukana_integration_spec_create: narukanaIntegrationSpecCreate,
                 narukana_plan_create: narukanaPlanCreate,
+                narukana_spec_from_codebase_create: narukanaSpecFromCodebaseCreate,
                 narukana_execute_task: narukanaExecuteTask,
                 narukana_sync: narukanaSync,
                 narukana_ui_spec_validate: narukanaUiSpecValidate,

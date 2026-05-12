@@ -23,6 +23,7 @@ async function main() {
     "narukana_contract_spec_create",
     "narukana_integration_spec_create",
     "narukana_plan_create",
+    "narukana_spec_from_codebase_create",
     "narukana_execute_task",
     "narukana_sync",
     "narukana_ui_spec_validate",
