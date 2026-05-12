@@ -14,16 +14,26 @@ import { getNarukanaFs } from "../core/narukanaFs";
 import { generateMemoryMarkdown, parseMemory } from "../core/memoryFormat";
 
 function findEligibleTasks(tasks: Task[]): Task | null {
+  const now = Date.now();
+
+  for (const task of tasks) {
+    if (task.state.status === "in_progress" && task.state.leaseEndsAt && task.state.leaseEndsAt < now) {
+      task.state.status = "todo";
+      task.state.claimedAt = undefined;
+      task.state.leaseEndsAt = undefined;
+      task.state.claimedBy = undefined;
+      task.state.instruction = undefined;
+    }
+  }
+
   for (const task of tasks) {
     if (task.state.status !== "todo") continue;
     const deps = task.definition.dependsOn;
     if (deps.length === 0) return task;
-
     const allDepsDone = deps.every((depId) => {
       const depTask = tasks.find((t) => t.definition.id === depId);
       return depTask && (depTask.state.status === "done" || depTask.state.status === "skipped");
     });
-
     if (allDepsDone) return task;
   }
   return null;
@@ -37,10 +47,11 @@ function markDependentsBlocked(tasks: Task[], failedTaskId: string): void {
   }
 }
 
-function initializeTasksFromPlan(planContent: string) {
+function initializeTasksFromPlan(planContent: string, previousPlanId?: string) {
   const taskDefs = parseTasksFromPlan(planContent);
   const planId = parsePlanId(planContent);
   const ledger = createEmptyTasksLedger(planId);
+  if (previousPlanId) ledger.meta.previousPlanId = previousPlanId;
   for (const def of taskDefs) ledger.tasks.push(createTask(def));
   return ledger;
 }
@@ -59,40 +70,42 @@ async function refreshMemory(fs: any, planContent: string, ledger: TasksLedger, 
 }
 
 function validateActionArgs(args: {
-  action: "next" | "report" | "status" | "release";
+  action: "next" | "report" | "status" | "release" | "assign";
   name?: string;
   taskId?: string;
-  status?: "in_progress" | "done" | "failed" | "blocked";
+  status?: "in_progress" | "done" | "failed" | "blocked" | "skipped";
+  instruction?: string;
 }): string | null {
-  if ((args.action === "next" || args.action === "report" || args.action === "release") && !args.name) {
-    return `action \"${args.action}\" requires \"name\"`;
+  if ((args.action === "next" || args.action === "report" || args.action === "release" || args.action === "assign") && !args.name) {
+    return `action "${args.action}" requires "name"`;
   }
-
+  if (args.action === "assign" && !args.taskId) {
+    return 'action "assign" requires "taskId"';
+  }
   if (args.action === "report") {
     if (!args.taskId) return 'action "report" requires "taskId"';
     if (!args.status) return 'action "report" requires "status"';
-    if (!["in_progress", "done", "failed", "blocked"].includes(args.status)) {
-      return 'action "report" allows status only: in_progress | done | failed | blocked';
+    if (!["in_progress", "done", "failed", "blocked", "skipped"].includes(args.status)) {
+      return 'action "report" allows status only: in_progress | done | failed | blocked | skipped';
     }
   }
-
   if (args.action === "release" && !args.taskId) {
     return 'action "release" requires "taskId"';
   }
-
   return null;
 }
 
 export const narukanaExecuteTask = tool({
-  description: "Execute task actions: next, report, status, release",
+  description: "Execute task actions: next, report, status, release, assign",
   args: {
-    action: tool.schema.enum(["next", "report", "status", "release"]),
+    action: tool.schema.enum(["next", "report", "status", "release", "assign"]),
     name: tool.schema.string().optional(),
     leaseMinutes: tool.schema.number().optional().default(DEFAULT_LEASE_MINUTES),
     taskId: tool.schema.string().optional(),
-    status: tool.schema.enum(["in_progress", "done", "failed", "blocked"]).optional(),
+    status: tool.schema.enum(["in_progress", "done", "failed", "blocked", "skipped"]).optional(),
     fatalReason: tool.schema.string().optional(),
     evidence: tool.schema.string().optional(),
+    instruction: tool.schema.string().optional(),
   },
   execute: async (args, ctx) => {
     const fs = getNarukanaFs(ctx.worktree);
@@ -114,7 +127,10 @@ export const narukanaExecuteTask = tool({
       let ledger: TasksLedger;
       if (await fileExists(fs, paths.tasks())) {
         ledger = parseTasksLedger(await fs.readFile(paths.tasks()));
-        if (ledger.meta.planId !== planId) ledger = initializeTasksFromPlan(planContent);
+        if (ledger.meta.planId !== planId) {
+          const prevPlanId = ledger.meta.planId;
+          ledger = initializeTasksFromPlan(planContent, prevPlanId);
+        }
       } else {
         ledger = initializeTasksFromPlan(planContent);
       }
@@ -123,22 +139,40 @@ export const narukanaExecuteTask = tool({
       if (await fileExists(fs, paths.memory())) {
         const memoryRaw = await fs.readFile(paths.memory());
         try {
-            const parsedMemory = parseMemory(memoryRaw);
-            if (parsedMemory.metadata.planId !== planId) {
-              await refreshMemory(fs, planContent, ledger, planId);
-              memoryStatus = "refreshed";
-            }
-          } catch {
+          const parsedMemory = parseMemory(memoryRaw);
+          if (parsedMemory.metadata.planId !== planId) {
             await refreshMemory(fs, planContent, ledger, planId);
             memoryStatus = "refreshed";
           }
-        } else {
+        } catch {
           await refreshMemory(fs, planContent, ledger, planId);
           memoryStatus = "refreshed";
         }
+      } else {
+        await refreshMemory(fs, planContent, ledger, planId);
+        memoryStatus = "refreshed";
+      }
 
-      if (action === "next") {
-        const eligible = findEligibleTasks(ledger.tasks);
+      if (action === "next" || action === "assign") {
+        let eligible: Task | null;
+        if (action === "assign") {
+          const taskId = args.taskId as string;
+          if (!taskId) return { output: "assign requires taskId", metadata: { error: true } };
+          const task = ledger.tasks.find((t) => t.definition.id === taskId);
+          if (!task) return { output: `Task ${taskId} not found`, metadata: { error: true } };
+          if (task.state.status !== "todo") return { output: `Task ${taskId} is not available (status: ${task.state.status})`, metadata: { error: true } };
+          const deps = task.definition.dependsOn;
+          if (deps.length > 0) {
+            const allDepsDone = deps.every((depId) => {
+              const depTask = ledger.tasks.find((t) => t.definition.id === depId);
+              return depTask && (depTask.state.status === "done" || depTask.state.status === "skipped");
+            });
+            if (!allDepsDone) return { output: `Task ${taskId} has unmet dependencies`, metadata: { error: true } };
+          }
+          eligible = task;
+        } else {
+          eligible = findEligibleTasks(ledger.tasks);
+        }
         if (!eligible) return "No eligible tasks found.";
 
         const now = Date.now();
@@ -146,23 +180,62 @@ export const narukanaExecuteTask = tool({
         eligible.state.claimedAt = now;
         eligible.state.leaseEndsAt = now + leaseMinutes * 60 * 1000;
         eligible.state.claimedBy = name;
+        eligible.state.instruction = args.instruction || undefined;
 
         await fs.writeFile(paths.tasks(), JSON.stringify(ledger, null, 2));
         await refreshMemory(fs, planContent, ledger, planId);
         memoryStatus = "refreshed";
 
-        const specRefs = eligible.definition.specRefs.join(", ") || "(none)";
-        return `Claimed task ${eligible.definition.id}: ${eligible.definition.title}\nSpec refs: ${specRefs}\nMemory: ${memoryStatus}`;
+        const relevantSpecs: Record<string, string> = {};
+        const specPathMap: Record<string, () => string> = {
+          "ui.md": paths.uiSpec,
+          "contract.json": paths.contractJson,
+          "contract-detail.md": paths.contractDetail,
+          "integration.md": paths.integration,
+        };
+        for (const ref of eligible.definition.specRefs) {
+          const getPath = specPathMap[ref];
+          if (getPath) {
+            const specPath = getPath();
+            if (await fileExists(fs, specPath)) {
+              relevantSpecs[ref] = await fs.readFile(specPath);
+            }
+          }
+        }
+
+        const taskCounts: Record<string, number> = { todo: 0, in_progress: 0, done: 0, failed: 0, blocked: 0, skipped: 0 };
+        for (const t of ledger.tasks) {
+          taskCounts[t.state.status] = (taskCounts[t.state.status] || 0) + 1;
+        }
+
+        return JSON.stringify({
+          task: eligible.definition,
+          claim: {
+            claimedBy: name,
+            claimedAt: now,
+            leaseEndsAt: now + leaseMinutes * 60 * 1000,
+            instruction: eligible.state.instruction || null,
+          },
+          memorySummary: {
+            planId,
+            taskCounts,
+          },
+          relevantSpecs,
+          nextSteps: [
+            `Implement ${eligible.definition.title}`,
+            `Report with: narukana_execute_task action:"report" name:"${name}" taskId:"${eligible.definition.id}" status:"done" evidence:"..."`,
+          ],
+        }, null, 2);
       }
 
       if (action === "status") {
         const counts = (status: string) => ledger.tasks.filter((t) => t.state.status === status).length;
-        return `Task Status (planId: ${planId}):\n\n- Todo: ${counts("todo")}\n- In Progress: ${counts("in_progress")}\n- Done: ${counts("done")}\n- Failed: ${counts("failed")}\n- Blocked: ${counts("blocked")}\n- Total: ${ledger.tasks.length}\n- Memory: ${memoryStatus}`;
+        return `Task Status (planId: ${planId}):\n\n- Todo: ${counts("todo")}\n- In Progress: ${counts("in_progress")}\n- Done: ${counts("done")}\n- Failed: ${counts("failed")}\n- Blocked: ${counts("blocked")}\n- Skipped: ${counts("skipped")}\n- Total: ${ledger.tasks.length}\n- Memory: ${memoryStatus}`;
       }
 
       if (action === "report") {
         const taskId = args.taskId as string;
-        const status = args.status as "in_progress" | "done" | "failed" | "blocked";
+        const status = args.status as "in_progress" | "done" | "failed" | "blocked" | "skipped";
 
         const task = ledger.tasks.find((t) => t.definition.id === taskId);
         if (!task) return { output: `Task ${taskId} not found`, metadata: { error: true } };
@@ -173,6 +246,9 @@ export const narukanaExecuteTask = tool({
         if (status === "failed" && args.fatalReason) {
           task.state.fatalReason = args.fatalReason;
           markDependentsBlocked(ledger.tasks, taskId);
+        }
+        if (status === "skipped") {
+          task.state.evidence = args.evidence || "Skipped";
         }
 
         await fs.writeFile(paths.tasks(), JSON.stringify(ledger, null, 2));
@@ -192,6 +268,7 @@ export const narukanaExecuteTask = tool({
         task.state.claimedAt = undefined;
         task.state.leaseEndsAt = undefined;
         task.state.claimedBy = undefined;
+        task.state.instruction = undefined;
 
         await fs.writeFile(paths.tasks(), JSON.stringify(ledger, null, 2));
         await refreshMemory(fs, planContent, ledger, planId);

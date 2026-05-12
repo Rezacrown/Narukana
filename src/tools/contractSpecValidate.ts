@@ -35,8 +35,8 @@ function validateContractJson(content: string): {
 
       if (!op.type) errors.push(`Operation '${opName}' missing 'type' field`);
       if (!op.transport) errors.push(`Operation '${opName}' missing 'transport' field`);
-      if (op.input === undefined) errors.push(`Operation '${opName}' missing 'input' field`);
-      if (op.output === undefined) errors.push(`Operation '${opName}' missing 'output' field`);
+      if (op.input === undefined) warnings.push(`Operation '${opName}' missing 'input' field (operations may have no input)`);
+      if (op.output === undefined) warnings.push(`Operation '${opName}' missing 'output' field (operations may have no output)`);
 
       if (op.transport === "http") {
         if (!op.method) errors.push(`Operation '${opName}' is HTTP but missing 'method'`);

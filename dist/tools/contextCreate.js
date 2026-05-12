@@ -1,8 +1,7 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists, createBackupPath } from "../core/fileSystem";
 import { getNarukanaFs } from "../core/narukanaFs";
-const contextTemplate = `# Context\n\n## Goal\nDescribe the desired outcome in one paragraph.\n\n## System Overview\n- What is being built?\n- Who are the users?\n- Where does the UI run?\n- Where does the backend/contract run?\n\n## Constraints\n- Tech stack constraints\n- Deployment constraints\n- Performance constraints\n- Security constraints\n\n## Assumptions\n- Assumptions that, if wrong, would break the design\n\n## Non-Goals\n- Explicitly list what is NOT being built\n\n## Risks\n- Biggest risks and unknowns\n`;
-const ideaContextTemplate = `# Context\n\n## Goal\n(Generated from idea.md - please expand)\n\n## System Overview\n- What is being built?\n- Who are the users?\n- Where does the UI run?\n- Where does the backend/contract run?\n\n## Constraints\n- Tech stack constraints\n- Deployment constraints\n- Performance constraints\n- Security constraints\n\n## Assumptions\n- Assumptions that, if wrong, would break the design\n\n## Non-Goals\n- Explicitly list what is NOT being built\n\n## Risks\n- Biggest risks and unknowns\n\n---\n\n## Original Idea\n(Idea content from .narukana/context/idea.md)\n`;
+import { CONTEXT_TEMPLATE, IDEA_CONTEXT_TEMPLATE } from "../core/templates";
 export const narukanaContextCreate = tool({
     description: "Create or regenerate context.md in .narukana/context/",
     args: {
@@ -36,13 +35,13 @@ export const narukanaContextCreate = tool({
                 if (ideaExists) {
                     const ideaContent = await fs.readFile(paths.idea());
                     content =
-                        ideaContextTemplate +
+                        IDEA_CONTEXT_TEMPLATE +
                             "\n---\n\n" +
                             ideaContent +
                             "\n\nPlease expand each section above with specific details.";
                 }
                 else {
-                    content = contextTemplate;
+                    content = CONTEXT_TEMPLATE;
                 }
             }
             await fs.writeFile(paths.context(), content);

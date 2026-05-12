@@ -93,6 +93,11 @@ export function parseTasksFromPlan(planContent) {
                 currentTask.riskTags = risks ? risks.split(",").map((r) => r.trim()) : [];
                 continue;
             }
+            const phaseMatch = line.match(/^Phase:\s*(\d+)$/);
+            if (phaseMatch) {
+                currentTask.phase = parseInt(phaseMatch[1]);
+                continue;
+            }
             if (line === "Acceptance:") {
                 currentSection = "acceptance";
                 continue;

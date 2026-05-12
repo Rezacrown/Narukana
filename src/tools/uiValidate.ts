@@ -1,29 +1,8 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists } from "../core/fileSystem";
 import { isValidConfig } from "../core/config";
-import {
-  NARUKANA_UI_ACTIONS_START,
-  NARUKANA_UI_ACTIONS_END,
-} from "../core/constants";
+import { parseUIActions } from "../core/markdownParsers";
 import { getNarukanaFs } from "../core/narukanaFs";
-
-function parseUIActions(content: string): string[] {
-  const actions: string[] = [];
-  const startIdx = content.indexOf(NARUKANA_UI_ACTIONS_START);
-  const endIdx = content.indexOf(NARUKANA_UI_ACTIONS_END);
-  if (startIdx === -1 || endIdx === -1) return actions;
-
-  const actionsBlock = content.substring(
-    startIdx + NARUKANA_UI_ACTIONS_START.length,
-    endIdx,
-  );
-
-  for (const line of actionsBlock.split("\n")) {
-    const match = line.trim().match(/^- action:\s*(.+)$/);
-    if (match) actions.push(match[1].trim());
-  }
-  return actions;
-}
 
 async function hasEvidence(fs: any, rootPath: string, action: string): Promise<boolean> {
   const files = await fs.glob("**/*.{ts,tsx,js,jsx}", { cwd: rootPath });
@@ -43,7 +22,6 @@ async function hasEvidence(fs: any, rootPath: string, action: string): Promise<b
       // ignore read errors
     }
   }
-
   return false;
 }
 
@@ -70,7 +48,6 @@ export const narukanaUiValidate = tool({
       }
 
       const uiRoot = config.paths.uiRoot;
-      // uiRoot is user-provided; treat as relative to worktree
       if (!(await fileExists(fs, uiRoot))) {
         return { output: `uiRoot path does not exist: ${uiRoot}`, metadata: { error: true } };
       }

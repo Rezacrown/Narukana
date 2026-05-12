@@ -1,13 +1,8 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists } from "../core/fileSystem";
 import { isValidConfig } from "../core/config";
+import { parseContractOperations } from "../core/markdownParsers";
 import { getNarukanaFs } from "../core/narukanaFs";
-
-function parseContractOperations(content: string): string[] {
-  const data = JSON.parse(content);
-  if (!data.operations || typeof data.operations !== "object") return [];
-  return Object.keys(data.operations);
-}
 
 async function hasEvidence(fs: any, rootPath: string, op: string): Promise<boolean> {
   const files = await fs.glob("**/*.{ts,js,sol}", { cwd: rootPath });

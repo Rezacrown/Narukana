@@ -1,6 +1,6 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists, createBackupPath } from "../core/fileSystem";
-import { NARUKANA_UI_ACTIONS_START, NARUKANA_UI_ACTIONS_END } from "../core/constants";
+import { parseUIActions, parseContractOperations } from "../core/markdownParsers";
 import {
   createEmptyTasksLedger,
   createTask,
@@ -11,86 +11,109 @@ import {
 import { generateMemoryMarkdown } from "../core/memoryFormat";
 import { getNarukanaFs } from "../core/narukanaFs";
 
-interface UIAction {
-  action: string;
-}
+function generatePlan(
+  uiActions: { action: string }[],
+  contractOps: { name: string; type: string; transport: string }[],
+  instruction?: string,
+  contextGoal?: string,
+  contextNonGoals?: string,
+): string {
+  const generatedAt = new Date().toISOString();
+  const directive = instruction || "Implement all specs as defined.";
+  const goal = contextGoal || "Deliver the specified features.";
+  const outOfScope = contextNonGoals || "Nothing explicitly excluded.";
 
-interface ContractOperation {
-  name: string;
-  type: string;
-  transport: string;
-}
+  const inScopeItems = [
+    ...uiActions.map((a) => `- UI: ${a.action}`),
+    ...contractOps.map((o) => `- Operation: ${o.name} (${o.type}, ${o.transport})`),
+    "- Integration testing across all layers",
+  ].join("\n");
 
-function parseUIActions(content: string): UIAction[] {
-  const actions: UIAction[] = [];
-  const startIdx = content.indexOf(NARUKANA_UI_ACTIONS_START);
-  const endIdx = content.indexOf(NARUKANA_UI_ACTIONS_END);
+  let idx = 1;
+  const uiIds: string[] = [];
+  const contractIds: string[] = [];
 
-  if (startIdx === -1 || endIdx === -1) return actions;
-
-  const block = content.substring(
-    startIdx + NARUKANA_UI_ACTIONS_START.length,
-    endIdx,
-  );
-
-  for (const line of block.split("\n")) {
-    const match = line.trim().match(/^- action:\s*(.+)$/);
-    if (match) actions.push({ action: match[1].trim() });
+  for (const _ of uiActions) {
+    uiIds.push(generateTaskId(idx++));
   }
-
-  return actions;
-}
-
-function parseContractOperations(content: string): ContractOperation[] {
-  const operations: ContractOperation[] = [];
-  const data = JSON.parse(content);
-  if (data.operations && typeof data.operations === "object") {
-    for (const [name, op] of Object.entries<any>(data.operations)) {
-      operations.push({
-        name,
-        type: op.type || "query",
-        transport: op.transport || "http",
-      });
-    }
+  for (const _ of contractOps) {
+    contractIds.push(generateTaskId(idx++));
   }
-  return operations;
-}
+  const integrationId = generateTaskId(idx++);
 
-function generatePlan(uiActions: UIAction[], contractOps: ContractOperation[]): string {
-  let plan = `# Plan\n\n> Generated at: ${new Date().toISOString()}\n> This plan is derived from specs - do not edit manually\n\n`;
+  const phasesBlock = [
+    "### Phase 1: UI Foundation",
+    ...(uiIds.length > 0 ? uiIds.map((id) => `- ${id}`) : ["- (no UI tasks)"]),
+    "",
+    "### Phase 2: Contract Foundation",
+    ...(contractIds.length > 0 ? contractIds.map((id) => `- ${id}`) : ["- (no contract tasks)"]),
+    "",
+    "### Phase 3: Integration",
+    `- ${integrationId}`,
+  ].join("\n");
 
+  let tasks = "";
   let taskIndex = 1;
-  const uiTaskIds: string[] = [];
-  const contractTaskIds: string[] = [];
 
-  for (const action of uiActions) {
+  for (let i = 0; i < uiActions.length; i++) {
+    const action = uiActions[i];
     const id = generateTaskId(taskIndex++);
-    uiTaskIds.push(id);
-    plan += `### ${id}: Implement UI for "${action.action}"\n\nDependsOn: \nSpecRefs: ui.md\nRiskTags: \n\nAcceptance:\n- UI component for "${action.action}" exists\n- Component handles loading, error, and success states\n\nVerification:\n- Component renders correctly\n- States are properly displayed\n\n`;
+    tasks += `### ${id}: Implement UI for "${action.action}"\n\nDependsOn: \nSpecRefs: ui.md\nRiskTags: \nPhase: 1\n\nAcceptance:\n- UI component for "${action.action}" exists\n- Component handles loading, error, and success states\n\nVerification:\n- Component renders correctly\n- States are properly displayed\n\n`;
   }
 
   for (const op of contractOps) {
     const id = generateTaskId(taskIndex++);
-    contractTaskIds.push(id);
-    plan += `### ${id}: Implement ${op.transport} operation "${op.name}"\n\nDependsOn: \nSpecRefs: contract.json, contract-detail.md\nRiskTags: \n\nAcceptance:\n- Operation "${op.name}" is implemented\n- Input validation is in place\n- Error handling is implemented\n\nVerification:\n- Operation responds correctly to valid input\n- Errors are handled appropriately\n\n`;
+    const deps = uiIds.length > 0 ? uiIds.join(", ") : "";
+    tasks += `### ${id}: Implement ${op.transport} operation "${op.name}"\n\nDependsOn: ${deps}\nSpecRefs: contract.json, contract-detail.md\nRiskTags: \nPhase: 2\n\nAcceptance:\n- Operation "${op.name}" is implemented\n- Input validation is in place\n- Error handling is implemented\n\nVerification:\n- Operation responds correctly to valid input\n- Errors are handled appropriately\n\n`;
   }
 
-  // Final integration task MUST depend on all previous tasks
-  const allDeps = [...uiTaskIds, ...contractTaskIds];
-  const integrationId = generateTaskId(taskIndex++);
-  plan += `### ${integrationId}: Integration testing\n\nDependsOn: ${allDeps.join(", ")}\nSpecRefs: integration.md\nRiskTags: \n\nAcceptance:\n- All UI actions are wired to their operations\n- Error flows work correctly\n\nVerification:\n- End-to-end flow testing passes\n\n`;
+  {
+    const id = generateTaskId(taskIndex++);
+    const allDeps = [...uiIds, ...contractIds].join(", ");
+    tasks += `### ${id}: Integration testing\n\nDependsOn: ${allDeps}\nSpecRefs: integration.md\nRiskTags: \nPhase: 3\n\nAcceptance:\n- All UI actions are wired to their operations\n- Error flows work correctly\n\nVerification:\n- End-to-end flow testing passes\n\n`;
+  }
 
-  return plan;
+  return [
+    "# Plan",
+    "",
+    `> Directive: ${directive}`,
+    `> Generated at: ${generatedAt}`,
+    `> This plan is derived from specs - do not edit manually`,
+    "",
+    "## Directive",
+    directive,
+    "",
+    "## Goal",
+    goal,
+    "",
+    "## Scope",
+    "",
+    "### In Scope",
+    inScopeItems,
+    "",
+    "### Out of Scope",
+    outOfScope,
+    "",
+    "## Phases",
+    "",
+    phasesBlock,
+    "",
+    "## Tasks",
+    "",
+    tasks,
+  ].join("\n");
 }
 
 export const narukanaPlanCreate = tool({
   description: "Generate plan.md from specs (context, ui, contract, integration)",
   args: {
-    regenerate: tool.schema.boolean().optional().default(true),
+    regenerate: tool.schema.boolean().optional().default(false),
+    instruction: tool.schema.string().optional(),
   },
   execute: async (args, ctx) => {
     const fs = getNarukanaFs(ctx.worktree);
-    const regenerate = args.regenerate ?? true;
+    const regenerate = args.regenerate ?? false;
+    const instruction = args.instruction || undefined;
 
     try {
       const required = [paths.context(), paths.uiSpec(), paths.contractJson(), paths.integration()];
@@ -105,22 +128,51 @@ export const narukanaPlanCreate = tool({
         };
       }
 
-      const exists = await fileExists(fs, paths.plan());
-      if (exists && !regenerate) {
+      const planExists = await fileExists(fs, paths.plan());
+      if (planExists && !regenerate) {
         return { output: ".narukana/plan.md already exists. Use regenerate:true to overwrite.", metadata: { error: true } };
       }
 
-      if (exists && regenerate) {
+      if (planExists && regenerate) {
         const backupPath = createBackupPath(paths.plan());
         await fs.writeFile(backupPath, await fs.readFile(paths.plan()));
       }
 
+      const memoryExists = await fileExists(fs, paths.memory());
+      if (memoryExists && regenerate) {
+        const memoryBackupPath = createBackupPath(paths.memory());
+        await fs.writeFile(memoryBackupPath, await fs.readFile(paths.memory()));
+      }
+
+      const contextContent = await fs.readFile(paths.context());
       const uiContent = await fs.readFile(paths.uiSpec());
       const contractContent = await fs.readFile(paths.contractJson());
-      const uiActions = parseUIActions(uiContent);
-      const contractOps = parseContractOperations(contractContent);
+      const integrationContent = await fs.readFile(paths.integration());
 
-      const planContent = generatePlan(uiActions, contractOps);
+      const uiActionNames = parseUIActions(uiContent);
+      const contractOpKeys = parseContractOperations(contractContent);
+
+      const uiActions = uiActionNames.map((a) => ({ action: a }));
+      const contractOps = contractOpKeys.map((name) => {
+        let type = "query";
+        let transport = "http";
+        try {
+          const json = JSON.parse(contractContent);
+          if (json.operations && json.operations[name]) {
+            type = json.operations[name].type || "query";
+            transport = json.operations[name].transport || "http";
+          }
+        } catch {}
+        return { name, type, transport };
+      });
+
+      const goalMatch = contextContent.match(/## Goal\n([\s\S]*?)(?:\n##|$)/);
+      const contextGoal = goalMatch ? goalMatch[1].trim() : undefined;
+
+      const nonGoalMatch = contextContent.match(/## Non-Goals\n([\s\S]*?)(?:\n##|$)/);
+      const contextNonGoals = nonGoalMatch ? nonGoalMatch[1].trim() : undefined;
+
+      const planContent = generatePlan(uiActions, contractOps, instruction, contextGoal, contextNonGoals);
       await fs.writeFile(paths.plan(), planContent);
 
       const planId = parsePlanId(planContent);
@@ -130,16 +182,17 @@ export const narukanaPlanCreate = tool({
 
       const memoryContent = generateMemoryMarkdown({
         planContent,
-        contextContent: await fs.readFile(paths.context()),
+        contextContent,
         uiSpecContent: uiContent,
         contractContent,
-        integrationContent: await fs.readFile(paths.integration()),
+        integrationContent,
         ledger,
         planId,
       });
       await fs.writeFile(paths.memory(), memoryContent);
 
-      return `Generated .narukana/plan.md (planId: ${planId}) and .narukana/memory.md\n\nTasks generated:\n- UI tasks: ${uiActions.length}\n- Contract tasks: ${contractOps.length}\n- Integration task: 1`;
+      const overwrote = (planExists || memoryExists) && regenerate;
+      return `Generated .narukana/plan.md (planId: ${planId}) and .narukana/memory.md\n\nTasks generated:\n- UI tasks: ${uiActions.length}\n- Contract tasks: ${contractOps.length}\n- Integration task: 1\n\n${overwrote ? "(Overwrote existing files - backups created)" : "(New files created)"}`;
     } catch (error: any) {
       return { output: `Error generating plan: ${error.message}`, metadata: { error: true } };
     }

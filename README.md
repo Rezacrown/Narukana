@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-0A7EA4?style=for-the-badge" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.1.0-0A7EA4?style=for-the-badge" />
   <img alt="OpenCode Plugin" src="https://img.shields.io/badge/OpenCode-Plugin-1F9D55?style=for-the-badge" />
   <img alt="Spec Engine" src="https://img.shields.io/badge/Spec-Engine-F59E0B?style=for-the-badge" />
   <img alt="Bun" src="https://img.shields.io/badge/runtime-Bun-111827?style=for-the-badge" />

@@ -6,6 +6,7 @@ export interface TaskDefinition {
     riskTags: string[];
     acceptance: string[];
     verification: string[];
+    phase?: number;
 }
 export interface TaskState {
     status: "todo" | "in_progress" | "done" | "failed" | "blocked" | "skipped";
@@ -16,6 +17,7 @@ export interface TaskState {
     fatalReason?: string;
     evidence?: string;
     report?: string;
+    instruction?: string;
 }
 export interface Task {
     definition: TaskDefinition;
@@ -26,6 +28,7 @@ export interface TasksLedger {
     meta: {
         planId: string;
         planGeneratedAt: string;
+        previousPlanId?: string;
     };
     tasks: Task[];
 }

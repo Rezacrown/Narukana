@@ -36,13 +36,20 @@ export const narukanaSync = tool({
                 out += "- narukana_contract_validate\n";
                 out += "- narukana_integration_validate\n";
             }
+            const planExists = await fileExists(fs, paths.plan());
+            let planId = null;
+            if (planExists) {
+                try {
+                    planId = parsePlanId(await fs.readFile(paths.plan()));
+                }
+                catch { }
+            }
             const hasMemory = await fileExists(fs, paths.memory());
             out += `\nMemory:\n- Present: ${hasMemory ? "yes" : "no"}`;
             if (hasMemory) {
                 try {
                     const memory = parseMemory(await fs.readFile(paths.memory()));
-                    if (await fileExists(fs, paths.plan())) {
-                        const planId = parsePlanId(await fs.readFile(paths.plan()));
+                    if (planExists && planId) {
                         const status = memory.metadata.planId === planId ? "in sync" : "stale";
                         out += `\n- Status: ${status}\n- Memory planId: ${memory.metadata.planId}\n- Current planId: ${planId}`;
                     }
@@ -53,6 +60,22 @@ export const narukanaSync = tool({
                 catch (error) {
                     out += `\n- Status: invalid (${error.message})`;
                 }
+            }
+            const tasksExists = await fileExists(fs, paths.tasks());
+            out += `\n\ntasks.json:\n  present: ${tasksExists ? "YES" : "NO"}`;
+            if (tasksExists && planExists && planId) {
+                try {
+                    const { parseTasksLedger } = await import("../core/planFormat");
+                    const tasksRaw = await fs.readFile(paths.tasks());
+                    const tasks = parseTasksLedger(tasksRaw);
+                    out += `\n  planId match: ${tasks.meta.planId === planId ? "YES" : "NO (stale)"}`;
+                }
+                catch {
+                    out += `\n  planId match: NO (parse error)`;
+                }
+            }
+            else if (tasksExists && (!planExists || !planId)) {
+                out += `\n  planId match: NO (plan missing/unreadable)`;
             }
             return out;
         }

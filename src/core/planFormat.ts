@@ -9,6 +9,7 @@ export interface TaskDefinition {
   riskTags: string[];
   acceptance: string[];
   verification: string[];
+  phase?: number;
 }
 
 export interface TaskState {
@@ -20,6 +21,7 @@ export interface TaskState {
   fatalReason?: string;
   evidence?: string;
   report?: string;
+  instruction?: string;
 }
 
 export interface Task {
@@ -32,6 +34,7 @@ export interface TasksLedger {
   meta: {
     planId: string;
     planGeneratedAt: string;
+    previousPlanId?: string;
   };
   tasks: Task[];
 }
@@ -145,6 +148,12 @@ export function parseTasksFromPlan(planContent: string): TaskDefinition[] {
       if (riskMatch) {
         const risks = riskMatch[1].trim();
         currentTask.riskTags = risks ? risks.split(",").map((r) => r.trim()) : [];
+        continue;
+      }
+
+      const phaseMatch = line.match(/^Phase:\s*(\d+)$/);
+      if (phaseMatch) {
+        currentTask.phase = parseInt(phaseMatch[1]);
         continue;
       }
 

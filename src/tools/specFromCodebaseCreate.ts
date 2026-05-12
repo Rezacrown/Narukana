@@ -143,19 +143,6 @@ function sanitizeName(name: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function detectPackageManager(rootPath: string): string {
-  try {
-    const fs = require("fs");
-    if (fs.existsSync(rootPath + "/bun.lockb") || fs.existsSync(rootPath + "/bun.lock")) return "bun";
-    if (fs.existsSync(rootPath + "/pnpm-lock.yaml")) return "pnpm";
-    if (fs.existsSync(rootPath + "/yarn.lock")) return "yarn";
-    if (fs.existsSync(rootPath + "/package-lock.json")) return "npm";
-    return "unknown";
-  } catch {
-    return "unknown";
-  }
-}
-
 async function readFileIfExists(fs: any, rootPath: string, filePath: string): Promise<string | null> {
   try {
     const fullPath = filePath.startsWith(rootPath) ? filePath : `${rootPath}/${filePath}`;

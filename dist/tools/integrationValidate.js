@@ -1,75 +1,8 @@
 import { tool } from "@opencode-ai/plugin";
 import { paths, fileExists } from "../core/fileSystem";
 import { isValidConfig } from "../core/config";
-import { NARUKANA_UI_ACTIONS_START, NARUKANA_UI_ACTIONS_END, } from "../core/constants";
+import { parseUIActions, parseContractOperations, parseIntegrationMappings } from "../core/markdownParsers";
 import { getNarukanaFs } from "../core/narukanaFs";
-function parseUIActions(content) {
-    const actions = [];
-    const startIdx = content.indexOf(NARUKANA_UI_ACTIONS_START);
-    const endIdx = content.indexOf(NARUKANA_UI_ACTIONS_END);
-    if (startIdx === -1 || endIdx === -1)
-        return actions;
-    const block = content.substring(startIdx + NARUKANA_UI_ACTIONS_START.length, endIdx);
-    for (const line of block.split("\n")) {
-        const match = line.trim().match(/^- action:\s*(.+)$/);
-        if (match)
-            actions.push(match[1].trim());
-    }
-    return actions;
-}
-function parseContractOperations(content) {
-    const data = JSON.parse(content);
-    if (!data.operations || typeof data.operations !== "object")
-        return [];
-    return Object.keys(data.operations);
-}
-function parseIntegrationMappings(content) {
-    const result = {
-        actions: [],
-        operations: [],
-        mappedOperations: [],
-        actionToOperations: {},
-        hasMappingsSection: false,
-    };
-    const mappingsMatch = content.match(/## Mappings\n([\s\S]*?)(?:\n##|$)/);
-    if (mappingsMatch) {
-        result.hasMappingsSection = true;
-        const lines = mappingsMatch[1].split("\n");
-        let currentAction = "";
-        for (const line of lines) {
-            const actionMatch = line.trim().match(/^- action:\s*(.+)$/);
-            if (actionMatch) {
-                currentAction = actionMatch[1].trim();
-                if (!result.actions.includes(currentAction))
-                    result.actions.push(currentAction);
-                result.actionToOperations[currentAction] = result.actionToOperations[currentAction] || [];
-            }
-            const opMatch = line.trim().match(/^-\s+op:\s*(.+)$/);
-            if (opMatch && currentAction) {
-                const op = opMatch[1].trim();
-                if (!result.operations.includes(op))
-                    result.operations.push(op);
-                if (!result.mappedOperations.includes(op))
-                    result.mappedOperations.push(op);
-                if (!result.actionToOperations[currentAction].includes(op)) {
-                    result.actionToOperations[currentAction].push(op);
-                }
-            }
-        }
-    }
-    const opsMatch = content.match(/## Contract Operations\n([\s\S]*?)(?:\n##|$)/);
-    if (opsMatch) {
-        for (const line of opsMatch[1].split("\n")) {
-            const match = line.trim().match(/^-\s+(.+)$/);
-            if (match) {
-                const op = match[1].trim();
-                if (!result.operations.includes(op))
-                    result.operations.push(op);
-            }
-        }
-    }
-    return result;
-}
 async function searchInDirectory(fs, rootPath, terms) {
     const files = await fs.glob("**/*.{ts,tsx,js,jsx,sol}", { cwd: rootPath });
     for (const file of files) {
@@ -132,14 +65,13 @@ export const narukanaIntegrationValidate = tool({
                     unmappedActions.push(action);
                 const opsForAction = integration.actionToOperations[action] || [];
                 if (integration.hasMappingsSection && integration.actions.includes(action) && opsForAction.length === 0) {
-                    missingMappingsInIntegration.push(`Action \"${action}\" has no mapped operations`);
+                    missingMappingsInIntegration.push(`Action "${action}" has no mapped operations`);
                 }
             }
             for (const op of contractOps) {
                 if (!integration.operations.includes(op))
                     unusedOps.push(op);
             }
-            // Evidence checks for declared mappings
             for (const action of integration.actions) {
                 const ok = await searchInDirectory(fs, config.paths.uiRoot, [
                     action.toLowerCase(),
