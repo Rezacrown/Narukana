@@ -49,7 +49,7 @@ Checks workspace integrity by verifying file presence and cross-referencing all 
 **Step 3: Contract Spec Structure Check**
 1. Read `.narukana/specs/contract.json`
 2. Verify it is valid JSON
-3. Verify `schemaVersion`, `name`, `domain` fields exist
+3. Verify `schemaVersion`, `name` fields exist
 4. Verify `operations` is an object with at least one entry
 5. For each operation, verify transport-specific fields exist
 

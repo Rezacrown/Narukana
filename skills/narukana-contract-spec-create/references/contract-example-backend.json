@@ -1,7 +1,6 @@
 {
   "schemaVersion": 1,
   "name": "UserAPI",
-  "domain": "backend",
   "operations": {
     "getUsers": {
       "type": "query",

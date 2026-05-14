@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "",
-  "domain": "",
-  "operations": {}
+  "operations": {
+    "operationName": {
+      "type": "query | mutation | event | job",
+      "transport": "http | contract | ws",
+      "method": "GET | POST | PUT | DELETE | SUBSCRIBE",
+      "endpoint": "/api/...",
+      "target": "",
+      "function": "",
+      "event": ""
+    }
+  }
 }

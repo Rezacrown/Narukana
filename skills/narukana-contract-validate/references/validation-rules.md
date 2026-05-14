@@ -11,10 +11,11 @@
 
 ## Contract Spec Validation
 - Must be valid JSON
-- Must have `schemaVersion`, `name`, `domain` fields
-- `operations` must be an object (not array)
+- Must have `schemaVersion`, `name` fields
+- Each operation must have: `type`, `transport`
 - If transport is "http": must have `method`, `endpoint`
 - If transport is "contract": must have `target`, `function`
+- If transport is "ws": must have `endpoint`; `event` is optional
 - Missing `input`/`output` is a warning
 
 ## Integration Spec Validation

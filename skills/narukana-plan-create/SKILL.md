@@ -41,6 +41,15 @@ Generates the execution plan (`plan.md`) and task ledger (`tasks.json`) from the
    - state: status=todo, all other fields null
 4. Write `.narukana/tasks.json` with schemaVersion=1, meta.planId=<hash of plan.md>
 5. Verify tasks.json exists and is valid JSON
+6. If `.narukana/tasks.json` already exists from a previous plan generation:
+   - Read the existing `tasks.json`
+   - Compare `meta.planId` in tasks.json with the NEW plan's hash
+   - If they DIFFER:
+     a. Warn the user: "⚠ Plan was regenerated. Previous tasks.json has tasks from the old plan."
+     b. List any tasks with status "in_progress" or "done" in the old tasks.json
+     c. Ask user: "Reset tasks.json for new plan? (y/n) — existing task progress will be lost."
+     d. If user says yes: overwrite tasks.json with new task definitions
+     e. If user says no: keep existing tasks.json (user must manually reconcile)
 
 8. Verify both files exist at `.narukana/plan.md` and `.narukana/memory.md`.
 

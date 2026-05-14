@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Added (v1.8.0) — Final gap closure
+
+- **Domain field removed** from contract spec — transport per-operation (http/contract/ws) is sufficient
+- **WebSocket transport** (`ws`) added to contract spec template and validators
+- **Node fallback** added to all JSON-dependent scripts: next-task.sh, report-task.sh, task-status.sh, check-contract-json.sh, check-consistency.sh
+- **Stale tasks.json detection** — plan-create warns when regenerating plan with existing tasks in progress
+- **New /narukana-validate command** — runs all validators sequentially and compiles report
+- **idea.md → context.md auto-generation** — commit-idea asks to auto-generate context.md
+- **package-lock.json** removed (vestigial from old plugin system)
+- **Empty skill directories** removed (plan-create/scripts, sync/references, sync/scripts, spec-from-codebase-create/scripts)
+- **Sync SKILL.md** — removed domain field check (field no longer exists)
+- **Validation rules** updated for ws transport and removed domain requirements
+
 ### Added (v1.7.0) — Spec refinement and workflow clarity
 
 - **Context split**: `context.md` now high-level only (Goal + Purpose). Optional context files: `techstack.md`, `architecture.md`, `project.md`.

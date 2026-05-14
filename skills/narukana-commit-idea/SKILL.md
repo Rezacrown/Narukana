@@ -41,8 +41,15 @@ Captures the current brainstorming or discussion context into `.narukana/context
 3. Ensure the file captures the essence of the discussion accurately
 
 **Step 3: Next Steps**
-1. Inform the user: "Idea saved to .narukana/context/idea.md"
-2. Suggest: "Ready to formalize with /narukana-context-create"
+1. Inform user: "Idea saved to .narukana/context/idea.md"
+2. Ask user: "Generate context.md from this idea? (y/n)"
+3. If yes:
+   a. Read `references/context-template.md` for format (from narukana-context-create skill)
+   b. Read `.narukana/context/idea.md` for content
+   c. Extract the Goal and key points from idea.md
+   d. Write `.narukana/context/context.md` with Goal + High-Level Purpose
+   e. Inform user: "context.md generated. You can now run spec-create skills."
+4. If no: "You can always run /narukana-context-create manually."
 
 ## Verification
 - `.narukana/context/idea.md` exists and contains meaningful content
