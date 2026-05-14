@@ -3,15 +3,31 @@ name: narukana-integration-spec-create
 description: Creates or regenerates the `integration.md` specification file in `.narukana/specs/` with runtime flow, UI actions, mappings, contract operations, error handling, and observability sections. Triggered on requests to document integration between UI and contracts, specify runtime flow, define cross-layer error handling, or create integration specifications. Not triggered for editing existing integration specs or modifying individual mappings.
 ---
 
+# Narukana Integration Spec Create
+
+## Detail
+Creates or regenerates the integration specification (`.narukana/specs/integration.md`) which maps UI actions to contract operations and defines runtime flow, error handling, and observability.
+
+**Use when:**
+- Defining how UI actions connect to contract/backend operations
+- Documenting cross-layer data flow and error strategies
+
+**Do NOT use for:**
+- Isolated UI or contract spec work
+- Generating the execution plan
+
 ## HARD RULES
 - Let the agent handle all `.narukana/` file operations as instructed in the procedure below.
 - When in doubt or on error — STOP and ask the user.
+- If any step is unclear or ambiguous → STOP and ask the user. Do not assume or guess intent.
 
 ## Inputs
 - `--regenerate`: Overwrite the existing `integration.md` file
+- (free text, optional): additional instructions or context for this task
 
 ## Procedure
 1. Pre-check: if `.narukana/specs/integration.md` exists and `--regenerate` was NOT passed, STOP and inform the user.
+- If the user provided additional instructions, incorporate them into your work.
 2. Read `references/integration-spec-template.md` for the required format and sections.
 3. Using the Write tool, create `.narukana/specs/integration.md` with all required sections filled in from user-provided information.
 4. Verify the file contains all required sections: `# Integration Spec`, `## Runtime Flow`, `## UI Actions`, `## Mappings`, `## Contract Operations`, `## Error Handling`, `## Observability`.
@@ -27,7 +43,8 @@ description: Creates or regenerates the `integration.md` specification file in `
 - File contains `## Observability` heading
 
 ## References
-- `references/integration-spec-template.md` — Template for the integration specification with runtime flow, UI actions, mappings, contract operations, error handling, and observability sections
+- `references/integration-spec-template.md` — template for integration.md
+- `references/integration-example.md` — real-world example (voting dApp)
 
 ## Scripts
 - `scripts/generate-integration.sh` — Creates a minimal integration.md template with placeholder sections. Usage: `bash scripts/generate-integration.sh`.

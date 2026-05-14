@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.6.0-0A7EA4?style=for-the-badge" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.7.0-0A7EA4?style=for-the-badge" />
   <img alt="Spec Engine" src="https://img.shields.io/badge/Spec-Engine-F59E0B?style=for-the-badge" />
   <img alt="Skills" src="https://img.shields.io/badge/Skills-15-22C55E?style=for-the-badge" />
 </p>
@@ -175,15 +175,32 @@ Every `/narukana-*` command is a simple router wrapper that loads a dedicated sk
 
 Agents use their built-in tools (Read, Write, Bash, Glob, Grep) to follow the procedure. No plugins, no external dependencies.
 
-### First flow
+## Workflows
 
-1. `/narukana-init` — initialize workspace structure
-2. `/narukana-context-create` — define project context
-3. `/narukana-ui-spec-create` — define UI specification
-4. `/narukana-contract-spec-create` — define contract specification
-5. `/narukana-integration-spec-create` — define integration mappings
-6. `/narukana-plan-create` — generate plan + memory from specs
-7. `/narukana-execute-task` — execute tasks via action loop
+### New project
+```
+brainstorm → commit-idea → context-create → spec-create (UI, contract, integration) → validate → plan-create → execute
+```
+
+1. `/narukana-brainstorm` — explore ideas, research, discuss
+2. `/narukana-commit-idea` — save finalized idea to `.narukana/context/idea.md`
+3. `/narukana-context-create` — define high-level project context (Goal + Purpose)
+4. `/narukana-ui-spec-create` + `/narukana-contract-spec-create` + `/narukana-integration-spec-create` — define specs
+5. `/narukana-ui-spec-validate` + `/narukana-contract-spec-validate` + `/narukana-integration-spec-validate` — validate specs
+6. `/narukana-plan-create` — generate plan and task ledger from specs
+7. `/narukana-execute-task` — execute tasks (multi-agent parallel)
+
+### Existing project (code already exists)
+```
+spec-from-codebase → context-create → spec-create → validate → plan-create → execute
+```
+
+1. `/narukana-spec-from-codebase-create` — reverse-engineer specs from existing code
+2. `/narukana-context-create` — define high-level project context
+3. `/narukana-ui-spec-create` + `/narukana-contract-spec-create` + `/narukana-integration-spec-create` — refine specs
+4. `/narukana-ui-spec-validate` + `/narukana-contract-spec-validate` + `/narukana-integration-spec-validate` — validate
+5. `/narukana-plan-create` — generate plan and task ledger
+6. `/narukana-execute-task` — execute tasks
 
 ---
 
@@ -253,18 +270,21 @@ Agents use their built-in tools (Read, Write, Bash, Glob, Grep) to follow the pr
 
 ```text
 .narukana/
-  narukana.json           # workspace config (paths, project name)
+  narukana.json              # workspace config
   context/
-    context.md            # project context (goal, constraints, risks)
-    idea.md               # optional idea file
+    context.md               # high-level project context (Goal + Purpose)
+    idea.md                  # optional — captured ideas (by commit-idea)
+    techstack.md             # optional — frameworks, tools, runtime
+    architecture.md          # optional — architecture description
+    project.md               # optional — repo structure, conventions
   specs/
-    ui.md                 # UI specification
-    contract.json         # contract/API operations
-    contract-detail.md    # human-readable contract details
-    integration.md        # integration mappings
-  plan.md                 # immutable plan (generated)
-  tasks.json              # task ledger (optional, file-based)
-  memory.md               # derived brief for fresh agents
+    ui.md                    # UI specification with Pages
+    contract.json            # contract/API operations
+    contract-detail.md       # human-readable contract details
+    integration.md           # integration mappings
+  plan.md                    # immutable plan (generated)
+  tasks.json                 # task ledger for multi-agent coordination
+  memory.md                  # derived brief for fresh agents
 ```
 
 ## Multi-agent consistency

@@ -3,15 +3,31 @@ name: narukana-integration-validate
 description: Performs cross-layer consistency checking by cross-referencing UI actions and contract operations through the integration.md mapping file. Triggered by requests to validate integration consistency, check cross-layer references, or verify that mappings reference existing specs. Not triggered for validating the structure of integration.md itself or for single-layer deep-scan validation.
 ---
 
+# Narukana Integration Validate
+
+## Detail
+Cross-references UI actions, contract operations, and integration mappings to verify end-to-end consistency across all layers.
+
+**Use when:**
+- Performing a full integration audit
+- Verifying that UI-contract mappings are consistent
+
+**Do NOT use for:**
+- Single-layer validation (use ui-validate or contract-validate)
+- Editing spec files
+
 ## HARD RULES
 - Let the agent handle all `.narukana/` file operations as instructed in the procedure below.
 - When in doubt or on error — STOP and ask the user.
+- If any step is unclear or ambiguous → STOP and ask the user. Do not assume or guess intent.
 
 ## Inputs
 None
+- (free text, optional): additional instructions or context for this task
 
 ## Procedure
 1. Read `references/validation-rules.md` to understand validation methodology.
+- If the user provided additional instructions, incorporate them into your work.
 2. Run `bash scripts/check-integration.sh` to extract references from integration.md and cross-reference against ui.md and contract.json.
 3. Review the script output for any "UNREFERENCED" entries.
 4. Report all unreferenced items to the user and suggest whether the mapping or the source spec needs updating.

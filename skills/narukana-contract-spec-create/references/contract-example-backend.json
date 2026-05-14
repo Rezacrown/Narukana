@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "UserAPI",
+  "domain": "backend",
+  "operations": {
+    "getUsers": {
+      "type": "query",
+      "transport": "http",
+      "method": "GET",
+      "endpoint": "/api/users"
+    },
+    "getUserById": {
+      "type": "query",
+      "transport": "http",
+      "method": "GET",
+      "endpoint": "/api/users/:id"
+    },
+    "createUser": {
+      "type": "mutation",
+      "transport": "http",
+      "method": "POST",
+      "endpoint": "/api/users"
+    },
+    "updateUser": {
+      "type": "mutation",
+      "transport": "http",
+      "method": "PUT",
+      "endpoint": "/api/users/:id"
+    },
+    "deleteUser": {
+      "type": "mutation",
+      "transport": "http",
+      "method": "DELETE",
+      "endpoint": "/api/users/:id"
+    }
+  }
+}

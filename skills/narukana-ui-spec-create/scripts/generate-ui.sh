@@ -2,16 +2,34 @@
 cat > .narukana/specs/ui.md << 'EOF'
 # UI Spec
 
-## Screens
-- Screen 1: (fill description)
+## Description
+<describe the UI>
 
-## Actions
+## Pages
+
+### Page: Home
+- Route: /
+- Layout: DefaultLayout
+- Display: <description of visual content>
+- Data: <data entities>
+- Components: <list>
+- Actions: <list>
+
+## States
+- loading
+- empty
+- error
+- success
+
 <!-- narukana-ui-actions -->
-| Action | Trigger | Effect | Screen |
-|--------|---------|--------|--------|
+- action: <name> (Page: <page>)
+<!-- /narukana-ui-actions -->
 
-## Data Flow
 <!-- narukana-ui-data -->
-- (fill)
+- entity: <name>: <fields>
+<!-- /narukana-ui-data -->
+
+## User Flow
+1) User opens app → lands on Home
 EOF
 echo "ui.md template created"

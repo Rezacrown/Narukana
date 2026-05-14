@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Added (v1.7.0) — Spec refinement and workflow clarity
+
+- **Context split**: `context.md` now high-level only (Goal + Purpose). Optional context files: `techstack.md`, `architecture.md`, `project.md`.
+- **UI spec restructured**: New `## Pages` section with per-page Route, Layout, Display, Data, Components, Actions fields.
+- **Example files** added to spec skills: `context-example.md`, `ui-spec-example.md`, `contract-example.json`, `contract-example-backend.json`, `contract-detail-example.md`, `contract-detail-example-backend.md`, `integration-example.md`.
+- **Contract spec examples**: Separate files for smart contract (Voting dApp) and REST API (User API) cases.
+- **narukana-sync redesigned**: Full cross-reference check across all specs (file presence, structure, cross-spec consistency).
+- **Validate scripts updated**: UI validator checks new Pages format; contract validator checks operations object (not array).
+- **Free text input** on all 17 skills — users can pass additional instructions with any command.
+- **README workflows**: Clear "New project" and "Existing project" flow paths.
+- **All SKILL.md files** updated with `## Detail` sections and "ask user" guardrails.
+
 ### Added (v1.6.0) — Skill restructuring and template fixes
 
 - Moved `narukana-skills/` to `skills/` for conventional naming

@@ -3,8 +3,23 @@
 ## Description
 A short description of the UI and what it enables.
 
-## Layout / Components
-- List primary screens/components
+## Pages
+
+### Page: {name}
+- Route: {path}
+- Layout: {layout component}
+- Display: {what the user sees — visual content description, data shown, interactions}
+- Data: {data entities displayed, referenced from <!-- narukana-ui-data -->}
+- Components: {list of technical components}
+- Actions: {list of actions available on this page}
+
+### Page: {name}
+- Route: {path}
+- Layout: {layout component}
+- Display: {description}
+- Data: {data entities}
+- Components: {list}
+- Actions: {list}
 
 ## States
 - loading
@@ -13,15 +28,17 @@ A short description of the UI and what it enables.
 - success
 
 <!-- narukana-ui-actions -->
-- action: (define your UI actions here)
+- action: {name} (Page: {page})
+- action: {name} (Page: {page})
 <!-- /narukana-ui-actions -->
 
 <!-- narukana-ui-data -->
-- entity: (define your data entities here)
+- entity: {name}: {field1}, {field2}, ...
+- entity: {name}: {field1}, {field2}, ...
 <!-- /narukana-ui-data -->
 
 ## User Flow
-1) User opens app
-2) User triggers an action
-3) UI calls an operation
-4) UI updates state
+1) User opens app → lands on {page}
+2) User triggers {action} on {page}
+3) UI calls {operation}
+4) UI displays result on {page}

@@ -3,18 +3,32 @@ name: narukana-spec-from-codebase-create
 description: Reverse-engineers specification files from an existing codebase by scanning source files and generating spec documents. Triggered on requests to create specs from existing code, reverse-engineer a project, bootstrap documentation from source, or generate spec files from a working codebase. Not triggered for editing manually written specs or regenerating individual spec files.
 ---
 
+## Detail
+Scans an existing codebase and reverse-engineers Narukana-compliant spec files. Uses glob patterns to detect UI components, backend routes, and contract functions across multiple languages.
+
+**Use when:**
+- You have working code but no specs yet
+- Migrating an existing project to use Narukana workflow
+
+**Do NOT use for:**
+- Editing existing specs (use spec-create skills)
+- Manual spec authoring
+
 ## HARD RULES
 - Let the agent handle all `.narukana/` file operations as instructed in the procedure below.
 - When in doubt or on error — STOP and ask the user.
+- If any step is unclear or ambiguous → STOP and ask the user. Do not assume or guess intent.
 
 ## Inputs
 - `--regenerate`: Allow overwriting existing spec files
 - (no flag): Preview mode only — shows extracted inventory without writing
+- (free text, optional): additional instructions or context for this task
 
 ## Procedure
 
 ### Phase 1 — Preview
 1. Read `references/scanner-patterns.md` for supported detection patterns.
+- If the user provided additional instructions, incorporate them into your work.
 2. Glob source files in the project:
    - UI: `**/*.{ts,tsx,js,jsx}` — extract component names, page routes, event handlers, API call patterns
    - Contract: `**/*.{sol,cairo,vy,move,rs}` — extract function signatures, event definitions, state variables

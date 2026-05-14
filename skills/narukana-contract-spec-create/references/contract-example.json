@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "name": "VotingContract",
+  "domain": "contract",
+  "operations": {
+    "createProposal": {
+      "type": "mutation",
+      "transport": "contract",
+      "target": "VotingContract",
+      "function": "createProposal"
+    },
+    "castVote": {
+      "type": "mutation",
+      "transport": "contract",
+      "target": "VotingContract",
+      "function": "castVote"
+    },
+    "executeProposal": {
+      "type": "mutation",
+      "transport": "contract",
+      "target": "VotingContract",
+      "function": "executeProposal"
+    },
+    "getProposal": {
+      "type": "query",
+      "transport": "contract",
+      "target": "VotingContract",
+      "function": "getProposal"
+    },
+    "getProposals": {
+      "type": "query",
+      "transport": "contract",
+      "target": "VotingContract",
+      "function": "getProposals"
+    }
+  }
+}

@@ -2,15 +2,17 @@
 
 ## UI Spec Validation
 - Must contain `# UI Spec` heading
+- Must contain `## Pages` section
+- Each page should have: Route, Display, Components, Actions
 - Must contain `<!-- narukana-ui-actions -->` and `<!-- /narukana-ui-actions -->`
 - Must contain `<!-- narukana-ui-data -->` and `<!-- /narukana-ui-data -->`
-- Warning if actions block is empty
+- Must contain `## User Flow` section
+- Warning if no pages defined
 
 ## Contract Spec Validation
 - Must be valid JSON
-- Must have `name` (string)
-- Must have `domain` (string)
-- Each operation must have: `type`, `transport`
+- Must have `schemaVersion`, `name`, `domain` fields
+- `operations` must be an object (not array)
 - If transport is "http": must have `method`, `endpoint`
 - If transport is "contract": must have `target`, `function`
 - Missing `input`/`output` is a warning
@@ -18,6 +20,7 @@
 ## Integration Spec Validation
 - Must contain sections: `## Runtime Flow`, `## UI Actions`, `## Mappings`, `## Contract Operations`, `## Error Handling`, `## Observability`
 - Warning if no `- action:` found under `## Mappings`
+- Warning if no operations listed under `## Contract Operations`
 - Cross-check against contract.json for unreferenced operations
 
 ## Deep-scan Validation

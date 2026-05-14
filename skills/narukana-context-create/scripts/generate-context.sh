@@ -1,18 +1,14 @@
 #!/bin/bash
-# generate-context.sh — creates a minimal context.md
+# generate-context.sh — creates a high-level context.md
 # Usage: bash scripts/generate-context.sh "Project description"
 DESC="${1:-Project description}"
-cat > .narukana/context/context.md << 'EOF'
-# Project Overview
-DESC_PLACEHOLDER
+cat > .narukana/context/context.md << EOF
+# Context
 
-## Tech Stack
-- Frontend:
-- Backend:
-- Contract:
+## Goal
+$DESC
 
-## Architecture
-<to be filled>
+## High-Level Purpose
+<describe the project purpose, target users, and expected outcome>
 EOF
-sed -i "s/DESC_PLACEHOLDER/$DESC/" .narukana/context/context.md
 echo "context.md created"
