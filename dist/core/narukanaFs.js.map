@@ -1,1 +1,0 @@
-{"version":3,"file":"narukanaFs.js","sourceRoot":"","sources":["../../src/core/narukanaFs.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,eAAe,EAAkB,MAAM,aAAa,CAAC;AAC9D,OAAO,EAAE,aAAa,EAAE,MAAM,aAAa,CAAC;AAE5C,MAAM,UAAU,aAAa,CAAC,YAAoB;IAChD,OAAO,eAAe,CAAC,YAAY,CAAC,CAAC;AACvC,CAAC;AAED,MAAM,UAAU,iBAAiB,CAAC,OAAe;IAC/C,OAAO,GAAG,aAAa,IAAI,OAAO,EAAE,CAAC;AACvC,CAAC"}

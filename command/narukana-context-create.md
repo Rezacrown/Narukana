@@ -1,16 +1,5 @@
-# narukana_context_create
+# /narukana-context-create
 
-Create or regenerate context.md in .narukana/context/
-**Parameters:**
-- `regenerate`: boolean (default: false) - overwrite existing file if true
-- `include`: string (optional) - manual context content to use
+Create or regenerate project context document
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_context_create",
-  "arguments": {}
-}
-```
+Follow the `narukana-context-create` skill procedure exactly.

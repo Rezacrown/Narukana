@@ -1,14 +1,5 @@
-# narukana_integration_spec_validate
+# /narukana-integration-spec-validate
 
-Validate integration.md structure (read-only)
-**Parameters:** None
+Validate integration spec file structure
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_integration_spec_validate",
-  "arguments": {}
-}
-```
+Follow the `narukana-integration-spec-validate` skill procedure exactly.

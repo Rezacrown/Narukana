@@ -1,14 +1,5 @@
-# narukana_contract_validate
+# /narukana-contract-validate
 
-Deep-scan: validate contract operation implementation evidence exists (read-only)
-**Parameters:** None
+Deep-scan contract implementation evidence in source code
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_contract_validate",
-  "arguments": {}
-}
-```
+Follow the `narukana-contract-validate` skill procedure exactly.

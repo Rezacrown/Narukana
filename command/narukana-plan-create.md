@@ -1,16 +1,5 @@
-# narukana_plan_create
+# /narukana-plan-create
 
-Generate plan.md from specs (context, ui, contract, integration)
-**Parameters:**
-- `regenerate`: boolean (default: false) - overwrite existing plan if true
-- `instruction`: string (optional) - directive for plan generation (e.g., "Add dark mode toggle")
+Generate execution plan from current specs
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_plan_create",
-  "arguments": {}
-}
-```
+Follow the `narukana-plan-create` skill procedure exactly.

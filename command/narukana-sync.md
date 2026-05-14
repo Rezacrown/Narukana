@@ -1,14 +1,5 @@
-# narukana_sync
+# /narukana-sync
 
-Verify presence of required files up to plan (read-only)
-**Parameters:** None
+Verify presence of required workspace files
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_sync",
-  "arguments": {}
-}
-```
+Follow the `narukana-sync` skill procedure exactly.

@@ -1,14 +1,5 @@
-# narukana_contract_spec_validate
+# /narukana-contract-spec-validate
 
-Validate contract.json structure (read-only)
-**Parameters:** None
+Validate contract spec file structure
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_contract_spec_validate",
-  "arguments": {}
-}
-```
+Follow the `narukana-contract-spec-validate` skill procedure exactly.

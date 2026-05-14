@@ -1,14 +1,5 @@
-# narukana_init
+# /narukana-init
 
-Initialize Narukana workspace with required directories and default template files
-**Parameters:** None
+Initialize Narukana workspace structure
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_init",
-  "arguments": {}
-}
-```
+Follow the `narukana-init` skill procedure exactly.

@@ -1,15 +1,5 @@
-# narukana_integration_spec_create
+# /narukana-integration-spec-create
 
-Create or regenerate integration.md spec in .narukana/specs/
-**Parameters:**
-- `regenerate`: boolean (default: false) - overwrite existing file if true
+Create or regenerate integration specification
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_integration_spec_create",
-  "arguments": {}
-}
-```
+Follow the `narukana-integration-spec-create` skill procedure exactly.

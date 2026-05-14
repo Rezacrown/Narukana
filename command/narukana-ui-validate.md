@@ -1,14 +1,5 @@
-# narukana_ui_validate
+# /narukana-ui-validate
 
-Deep-scan: validate UI action implementation evidence exists (read-only)
-**Parameters:** None
+Deep-scan UI implementation evidence in source code
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_ui_validate",
-  "arguments": {}
-}
-```
+Follow the `narukana-ui-validate` skill procedure exactly.

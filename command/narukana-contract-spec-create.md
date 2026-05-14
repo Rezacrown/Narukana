@@ -1,15 +1,5 @@
-# narukana_contract_spec_create
+# /narukana-contract-spec-create
 
-Create or regenerate contract.json and contract-detail.md specs in .narukana/specs/
-**Parameters:**
-- `regenerate`: boolean (default: false) - overwrite existing files if true
+Create or regenerate contract specification
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_contract_spec_create",
-  "arguments": {}
-}
-```
+Follow the `narukana-contract-spec-create` skill procedure exactly.

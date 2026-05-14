@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+### Added (v1.6.0) — Skill restructuring and template fixes
+
+- Moved `narukana-skills/` to `skills/` for conventional naming
+- Removed `scripts/build-command-wrappers.ts` — no build step needed
+- Removed `src/commands/` — `command/` is now the source of truth
+- `package.json` stripped of all build scripts and dependencies
+- `narukana-init` now generates `.narukana/narukana.json` with workspace config
+- Contract spec split: backend (REST API) vs smart contract (blockchain), distinguished by `transport` field
+- All reference templates updated to match proven old-narukana formats (context, ui, contract, integration, plan, memory, validation, scanner)
+- README command guide now includes a Flags column for each command
+- Removed outdated HARD RULES from all 15 SKILL.md files
+
+## Unreleased
+
+### Added (v1.5.0) — Complete skill overhaul
+
+- **Complete removal of OpenCode plugin system**: All TypeScript tool files (`src/tools/`, `src/core/`, `src/index.ts`) removed. No more `@opencode-ai/plugin` dependency. No more `tsconfig.json` or TypeScript compilation.
+- **15 self-contained skills** under `Narukana/narukana-skills/`. Each skill has:
+  - `SKILL.md` — strict procedure for the agent to follow (pre-check, execute, verify)
+  - `references/` — templates, format specs, and examples
+  - `scripts/` — optional bash helper scripts for common operations
+- **Command wrappers as skill routers**: each `/narukana-*` wrapper loads the corresponding skill. No tool names, no parameters, no JSON.
+- **Zero runtime dependencies**: works with any terminal-based AI agent. No plugin registration, no config.json changes, no env vars.
+- **Bash helper scripts**: `init.sh`, `generate-*.sh`, `check-*.sh`, `next-task.sh`, `report-task.sh`, `task-status.sh` — 10 helper scripts across the skill pack.
+- **Reference templates**: canonical layout, context template, UI spec template, contract spec template, contract detail template, integration spec template, plan format v2, memory format, loop rules, domain guard, scanner patterns, validation rules.
+- `package.json` simplified — only `build:command` script remains.
+- `scripts/build-command-wrappers.ts` updated to generate English router wrappers.
+
 ### Added (Plan 4 — v1.3.0)
 
 - `narukana_plan_create` `instruction` parameter: directive for plan generation (produces `## Directive` section in plan.md)

@@ -1,0 +1,152 @@
+===============================================================================
+  NARUKANA — Installation Instructions for AI Agents
+  https://github.com/Rezacrown/Narukana
+===============================================================================
+
+This file tells you (the AI agent) how to install and use Narukana.
+Follow these steps exactly. Do not skip any step.
+
+=======================================================================
+  STEP 1: Clone the repository
+=======================================================================
+
+Clone the Narukana repo to your working environment:
+
+  git clone https://github.com/Rezacrown/Narukana
+  cd Narukana
+
+=======================================================================
+  STEP 2: Locate the skills directory
+=======================================================================
+
+After cloning, you will find:
+
+  Narukana/
+    skills/           <-- 15 skill directories, one per command
+      narukana-init/
+        SKILL.md
+        references/
+        scripts/
+      narukana-context-create/
+      ...
+    command/          <-- 15 command wrappers (router files)
+    installation.txt  <-- this file
+
+No build step, no dependencies, no configuration needed.
+
+=======================================================================
+  STEP 3: Install for OpenCode
+=======================================================================
+
+Copy the skills to OpenCode's global skills directory:
+
+  Windows:
+    cp -r skills %USERPROFILE%\.config\opencode\skills\narukana-skills
+    cp command/*.md %USERPROFILE%\.config\opencode\command\
+
+  macOS / Linux:
+    cp -r skills ~/.config/opencode/skills/narukana-skills
+    cp command/*.md ~/.config/opencode/command/
+
+After copying, restart OpenCode. Verify with:
+
+  /narukana-init
+
+=======================================================================
+  STEP 4: Install for Claude Code
+=======================================================================
+
+  mkdir -p ~/.claude/skills
+  cp -r skills ~/.claude/skills/narukana
+
+After copying, skills are available as slash commands:
+  /narukana-init
+  /narukana-plan-create
+  /narukana-execute-task
+  ...and 12 more
+
+=======================================================================
+  STEP 5: Install for Cursor
+=======================================================================
+
+  mkdir -p .cursor/skills
+  cp -r skills .cursor/skills/narukana
+
+=======================================================================
+  STEP 6: Install for other AI agents (Cline, WindSurf, Copilot)
+=======================================================================
+
+Copy to the appropriate skills directory for your agent:
+
+  Cline:         .cline/skills/
+  WindSurf:      .windsurf/skills/
+  GitHub Copilot: .github/skills/
+  Generic:       .agents/skills/
+
+Example:
+  cp -r skills <agent-skills-dir>/narukana
+
+=======================================================================
+  STEP 7: Manual usage (no skill directory support)
+=======================================================================
+
+If your agent does not support skill directories, reference a skill file:
+
+  Read Narukana/skills/narukana-init/SKILL.md and follow the procedure.
+
+Each skill contains complete step-by-step instructions under "Procedure".
+Use your built-in tools (Read, Write, Bash, Glob, Grep) to execute them.
+
+References and templates are in the skill's references/ directory.
+Helper scripts are in the skill's scripts/ directory.
+
+=======================================================================
+  SKILL REFERENCE (all 15 commands)
+=======================================================================
+
+  Command                    Skill directory
+  ─────────────────────────  ─────────────────────────────────────
+  /narukana-init             skills/narukana-init/
+  /narukana-context-create   skills/narukana-context-create/
+  /narukana-ui-spec-create   skills/narukana-ui-spec-create/
+  /narukana-contract-spec-create   skills/narukana-contract-spec-create/
+  /narukana-integration-spec-create  skills/narukana-integration-spec-create/
+  /narukana-plan-create      skills/narukana-plan-create/
+  /narukana-execute-task     skills/narukana-execute-task/
+  /narukana-ui-validate      skills/narukana-ui-validate/
+  /narukana-contract-validate     skills/narukana-contract-validate/
+  /narukana-integration-validate  skills/narukana-integration-validate/
+  /narukana-ui-spec-validate     skills/narukana-ui-spec-validate/
+  /narukana-contract-spec-validate  skills/narukana-contract-spec-validate/
+  /narukana-integration-spec-validate  skills/narukana-integration-spec-validate/
+  /narukana-sync              skills/narukana-sync/
+  /narukana-spec-from-codebase-create  skills/narukana-spec-from-codebase-create/
+
+=======================================================================
+  FIRST WORKFLOW (step by step)
+=======================================================================
+
+  1. Narukana/skills/narukana-init/SKILL.md
+     → Initialize .narukana/ workspace
+
+  2. Narukana/skills/narukana-context-create/SKILL.md
+     → Create project context document
+
+  3. Narukana/skills/narukana-ui-spec-create/SKILL.md
+     → Define UI specification
+
+  4. Narukana/skills/narukana-contract-spec-create/SKILL.md
+     → Define contract specification
+
+  5. Narukana/skills/narukana-integration-spec-create/SKILL.md
+     → Define integration mappings
+
+  6. Narukana/skills/narukana-plan-create/SKILL.md
+     → Generate plan and memory from specs
+
+  7. Narukana/skills/narukana-execute-task/SKILL.md
+     → Execute tasks (next, report, status)
+
+=======================================================================
+  END OF INSTRUCTIONS
+=======================================================================

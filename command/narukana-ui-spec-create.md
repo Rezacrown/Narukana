@@ -1,15 +1,5 @@
-# narukana_ui_spec_create
+# /narukana-ui-spec-create
 
-Create or regenerate ui.md spec in .narukana/specs/
-**Parameters:**
-- `regenerate`: boolean (default: false) - overwrite existing file if true
+Create or regenerate UI specification
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_ui_spec_create",
-  "arguments": {}
-}
-```
+Follow the `narukana-ui-spec-create` skill procedure exactly.

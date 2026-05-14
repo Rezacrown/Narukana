@@ -1,14 +1,5 @@
-# narukana_integration_validate
+# /narukana-integration-validate
 
-Deep-scan: validate integration consistency between UI and backend (read-only)
-**Parameters:** None
+Deep-scan cross-layer integration consistency
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_integration_validate",
-  "arguments": {}
-}
-```
+Follow the `narukana-integration-validate` skill procedure exactly.

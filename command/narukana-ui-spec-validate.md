@@ -1,14 +1,5 @@
-# narukana_ui_spec_validate
+# /narukana-ui-spec-validate
 
-Validate UI spec structure (read-only)
-**Parameters:** None
+Validate UI spec file structure
 
-
-## Usage
-
-```json
-{
-  "name": "narukana_ui_spec_validate",
-  "arguments": {}
-}
-```
+Follow the `narukana-ui-spec-validate` skill procedure exactly.

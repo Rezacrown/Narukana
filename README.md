@@ -3,10 +3,9 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.1.0-0A7EA4?style=for-the-badge" />
-  <img alt="OpenCode Plugin" src="https://img.shields.io/badge/OpenCode-Plugin-1F9D55?style=for-the-badge" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.6.0-0A7EA4?style=for-the-badge" />
   <img alt="Spec Engine" src="https://img.shields.io/badge/Spec-Engine-F59E0B?style=for-the-badge" />
-  <img alt="Bun" src="https://img.shields.io/badge/runtime-Bun-111827?style=for-the-badge" />
+  <img alt="Skills" src="https://img.shields.io/badge/Skills-15-22C55E?style=for-the-badge" />
 </p>
 
 <p align="center">
@@ -15,21 +14,18 @@
 
 # Narukana
 
-Narukana is a standalone spec engine for OpenCode.
+Narukana is a spec engine for AI-assisted development. It keeps work aligned by making specs the source of truth, generating an immutable plan from those specs, and coordinating execution through a shared task ledger.
 
-It exists to solve a common problem: teams and agents often start coding before the spec is stable. Narukana keeps work aligned by making specs the source of truth, generating an immutable plan from those specs, and coordinating execution through a derived task ledger.
-
-> [!IMPORTANT]
-> Narukana is its own product. This README does not position it as a migration or upgrade from any previous framework.
+Works with any agent (OpenCode, Claude Code, Cursor, etc.) — no plugins, no runtime dependencies, no build step, no vendor lock-in.
 
 ## What Narukana does
 
-- Creates and manages a `.narukana/` workspace.
+- Creates and manages a `.narukana/` workspace with OpenCode skills (15 skills in `skills/`).
 - Treats `.narukana/context/*` and `.narukana/specs/*` as editable source of truth.
 - Generates `.narukana/plan.md` as a derived, immutable artifact.
-- Generates `.narukana/tasks.json` from `plan.md` for execution coordination.
 - Generates `.narukana/memory.md` as a derived brief for fresh agent sessions.
-- Provides read-only validators for both spec quality and implementation evidence.
+- Provides validators for spec quality and implementation evidence.
+- Supports parallel multi-agent execution through shared task state.
 
 ## Spec Engine Workflow
 
@@ -46,218 +42,210 @@ flowchart TD
   E --> V3["Spec Validate: Integration"]
 
   E --> P["Generate Plan\n.narukana/plan.md (immutable)"]
-  P --> T["Task Ledger\n.narukana/tasks.json (derived)"]
   P --> M["Memory Brief\n.narukana/memory.md (derived)"]
-  T --> X["Execution\nnext / report / status / release"]
+  P --> T["Task Ledger\nfile-based task state"]
+  T --> X["Execution\nnext / report / status"]
   X --> M
 ```
 
----
+## Quick Start
 
-## Quick Start (OpenCode)
-
-### 1) Install and build Narukana
-
-From the Narukana repository root:
+### Step 1: Clone the repository
 
 ```bash
 git clone https://github.com/Rezacrown/Narukana
-
 cd Narukana
-
-bun install
-bun run build
 ```
 
-This generates:
+### Step 2: Install skills (OpenCode)
 
-- `dist/index.js` (actual plugin runtime)
-- `command/*.md` and `src/commands/*.md` (command wrapper docs)
-
-> Wrapper filenames are namespaced and dashed (e.g. `narukana-execute-task.md`), so your OpenCode slash commands will be `/narukana-execute-task`, `/narukana-plan-create`, etc.
-
-### 2) Register Narukana plugin in OpenCode (Global or Project-only)
-
-You can register Narukana in two ways:
-
-- **Global config**: available in all projects
-- **Project-only config**: available only in one repository
-
-#### Option A: Global OpenCode config
-
-Edit your global OpenCode config file (for example `~/.config/opencode/opencode.jsonc`) and add:
-
-```jsonc
-{
-  "plugin": [["file:///ABSOLUTE/PATH/TO/Narukana/dist/index.js", {}]],
-  "command": ["ABSOLUTE/PATH/TO/Narukana/command"],
-}
+```powershell
+cp -r skills $env:USERPROFILE\.config\opencode\skills\narukana-skills
 ```
 
-#### Option B: Project-only OpenCode config
+### Step 3: Install command wrappers (OpenCode)
 
-Create or edit `opencode.jsonc` in your project root:
-
-```jsonc
-{
-  "plugin": [["file:///ABSOLUTE/PATH/TO/Narukana/dist/index.js", {}]],
-  "command": ["ABSOLUTE/PATH/TO/Narukana/command"],
-}
+```powershell
+cp command/*.md $env:USERPROFILE\.config\opencode\command\
 ```
 
-> [!NOTE]
-> If your path contains spaces, encode them as `%20`.
+### Step 4: Restart OpenCode
 
-Examples:
+Close and reopen your OpenCode terminal. Verify with:
 
-- macOS/Linux: `file:///home/username/projects/.opencode/dist/index.js`
-- Windows: `file:///C:/Users/username/projects/.opencode/dist/index.js`
-
-And for command wrappers directory:
-
-- macOS/Linux: `/home/username/projects/.opencode/command`
-- Windows: `C:/Users/username/projects/.opencode/command`
-
-### 3) Make sure `/command` docs are discoverable
-
-Narukana has two parts that must both be wired:
-
-- **Plugin tools**: executable tools loaded from `dist/index.js`
-- **Command wrappers**: markdown docs loaded from the `command` folder path in OpenCode config
-
-To refresh command wrappers:
-
-```bash
-bun run build:command
+```
+/narukana-init
 ```
 
-What to verify:
+The `narukana-init` skill loads and guides you through initialization.
 
-1. `command/` contains files like `narukana-init.md`, `narukana-plan-create.md`, `narukana-execute-task.md`.
-2. Your OpenCode config has `"command": [".../Narukana/command"]`.
-3. OpenCode session is running in this repo/workspace.
-4. Reopen or restart the OpenCode session after regenerating wrappers.
-
-If `/command` docs still do not show:
-
-1. Run `bun run build:command` again.
-2. Confirm files exist in `command/`.
-3. Confirm `command` path in global/project config points to Narukana `command` folder.
-4. Restart OpenCode session for this workspace.
-
-### 4) First practical flow
-
-Run commands in this order (slash commands via wrapper docs):
-
-1. `/narukana-init`
-2. `/narukana-context-create`
-3. `/narukana-ui-spec-create`
-4. `/narukana-contract-spec-create`
-5. `/narukana-integration-spec-create`
-6. `/narukana-plan-create`
-7. `/narukana-execute-task` (autonomous loop) or `/narukana-execute-task --action next --name "agent-1"`
+**No build step, no dependencies, no config changes needed.**
 
 ---
 
-## Using Narukana in other agents (Claude Code, Cursor)
+## Installation for other AI agents
 
-Narukana's **workflow model** is agent-agnostic (spec files + plan + tasks). The current native runtime package in this repo is optimized for OpenCode, but you can still use Narukana in other agents with this setup:
+Narukana works with any AI agent. The skills follow the [Agent Skills](https://agentskills.io) open standard, which means they are portable across tools that support it.
 
 ### Claude Code
 
-1. Clone Narukana and run `bun run build`.
-2. Keep `.narukana/` in your project as the source of truth.
-3. Use the generated docs in `command/*.md` as command references.
-4. Run Narukana steps from your terminal (or scripts) and let Claude Code operate on the same repo files.
+Skills in `~/.claude/skills/` are auto-discovered by Claude Code and available as slash commands.
+
+```bash
+# Clone the repo
+git clone https://github.com/Rezacrown/Narukana
+cd Narukana
+
+# Install skills globally (all projects)
+mkdir -p ~/.claude/skills
+cp -r skills ~/.claude/skills/narukana
+
+# (Optional) Install only for current project
+mkdir -p .claude/skills
+cp -r skills .claude/skills/narukana
+```
+
+After installing, skills are available as slash commands:
+- `/narukana-init`
+- `/narukana-plan-create`
+- `/narukana-execute-task`
+- ...and 12 more
+
+You can also pass the `installation.txt` file to Claude Code:
+
+```
+Read installation.txt and follow the steps.
+```
 
 ### Cursor
 
-1. Open your project in Cursor.
-2. Keep `.narukana/` files in the repo and edit specs there.
-3. Use `command/*.md` as operational playbooks for your team/agents.
-4. Trigger Narukana build/refresh from terminal (`bun run build`, `bun run build:command`) and continue coding in Cursor.
+Skills in `.cursor/skills/` are auto-discovered by Cursor.
 
-> [!NOTE]
-> In this repository version, OpenCode has first-class plugin integration. Other agents can still follow the same Narukana spec engine workflow through the shared `.narukana/` artifacts and command wrapper docs.
+```bash
+# Clone the repo
+git clone https://github.com/Rezacrown/Narukana
+cd Narukana
+
+# Install skills for the current project
+mkdir -p .cursor/skills
+cp -r skills .cursor/skills/narukana
+```
+
+### Cline, WindSurf, and other AI editors
+
+These tools follow the same Agent Skills standard. Copy the skills directory to the appropriate location for your editor:
+
+- Cline: `.cline/skills/`
+- WindSurf: `.windsurf/skills/`
+- GitHub Copilot: `.github/skills/`
+- Generic: `.agents/skills/`
+
+```bash
+# Example for any agent
+cp -r skills <agent-skills-dir>/narukana
+```
+
+### Manual approach (no installation)
+
+If your agent does not support skill directories, just reference the skill files directly in your prompt:
+
+```
+Read Narukana/skills/narukana-init/SKILL.md and follow the procedure exactly.
+```
+
+The agent reads the SKILL.md, follows the procedure step by step, and uses its built-in tools to execute. Each skill is self-contained with references and scripts available in its directory.
 
 ---
 
-## Command Guide (by context)
+## Auto-install instruction for AI agents
 
-### A) Workspace Setup and Spec Authoring
+If you are an AI agent and the user has asked you to install Narukana,
+read the file at `installation.txt` in this repository and follow it exactly.
+It contains all the steps needed for both OpenCode and non-OpenCode setups.
 
-| Command                            | Purpose                                                     | Typical use                                       |
-| ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
-| `/narukana-init`                    | Creates `.narukana/` structure and default files if missing | First setup in a repo                             |
-| `/narukana-context-create`          | Creates `context.md`                                        | Define goals, constraints, assumptions            |
-| `/narukana-ui-spec-create`          | Creates `ui.md`                                             | Define UI actions, states, and UI data            |
-| `/narukana-contract-spec-create`    | Creates `contract.json` and `contract-detail.md`            | Define backend/contract operations                |
-| `/narukana-integration-spec-create` | Creates `integration.md`                                    | Define mappings between UI actions and operations |
-| `/narukana-plan-create`             | Generates immutable `plan.md` from specs                    | Move from spec phase to execution phase           |
+---
 
-Flags used in this context:
+## How it works
 
-- `regenerate` (boolean)
-  - `false` (default): do not overwrite existing files.
-  - `true`: overwrite and create backup `*.bak.<timestamp>`.
-- `include` (string, `/narukana-context-create` only)
-  - Use provided text as the full `context.md` content.
+Every `/narukana-*` command is a simple router wrapper that loads a dedicated skill. The skill contains the full procedure:
 
-### B) Task Execution and Coordination
+1. **SKILL.md** — step-by-step instructions for the agent (pre-checks, execution, verification)
+2. **references/** — templates, format specs, and examples the agent reads for context
+3. **scripts/** — optional bash helper scripts for common operations
 
-| Command                 | Purpose                                                  | Typical use              |
-| ----------------------- | -------------------------------------------------------- | ------------------------ |
-| `/narukana-execute-task` | Claim task, report progress, check status, release lease, assign by taskId | Daily execution workflow |
+Agents use their built-in tools (Read, Write, Bash, Glob, Grep) to follow the procedure. No plugins, no external dependencies.
 
-Flags used in this context:
+### First flow
 
-- `action` (optional in autonomous loop mode)
-  - `next`: claim next eligible task.
-  - `assign`: claim a specific task by `taskId`.
-  - `status`: show ledger summary.
-  - `report`: update one task status.
-  - `release`: release one claimed task.
-- `name` (required for `next`, `assign`, `report`, `release`): claimer identity (agent/person).
-- `instruction` (optional): task-level note stored in `tasks.json` for the claiming agent.
-- `leaseMinutes` (optional, default `120`): claim duration.
-- `taskId` (required for `assign`, `report`, and `release`): task ID like `T-001`.
-- `status` (for `report`): `in_progress | done | failed | blocked | skipped`.
-- `fatalReason` (optional): reason when reporting failure.
-- `evidence` (optional): completion evidence.
+1. `/narukana-init` — initialize workspace structure
+2. `/narukana-context-create` — define project context
+3. `/narukana-ui-spec-create` — define UI specification
+4. `/narukana-contract-spec-create` — define contract specification
+5. `/narukana-integration-spec-create` — define integration mappings
+6. `/narukana-plan-create` — generate plan + memory from specs
+7. `/narukana-execute-task` — execute tasks via action loop
 
-Memory behavior in execution:
+---
 
-- `/narukana-plan-create` writes both `.narukana/plan.md` and `.narukana/memory.md`.
-- `/narukana-execute-task` checks memory frontmatter `planId` against current plan hash.
-- If memory is missing, stale, or invalid, Narukana auto-refreshes memory before continuing.
-- Source of truth remains `.narukana/context/*`, `.narukana/specs/*`, `.narukana/plan.md`, and `.narukana/tasks.json`.
+## Command Guide
 
-### C) Spec Validation (Read-only)
+### Workspace Setup and Spec Authoring
 
-| Command                              | Purpose                                                 | Typical use                    |
-| ------------------------------------ | ------------------------------------------------------- | ------------------------------ |
-| `/narukana-ui-spec-validate`          | Validates UI spec structure and required anchors        | After editing `ui.md`          |
-| `/narukana-contract-spec-validate`    | Validates `contract.json` and required operation fields | After editing `contract.json`  |
-| `/narukana-integration-spec-validate` | Validates required integration sections                 | After editing `integration.md` |
+| Command | Flags | Purpose |
+|---|---|---|
+| `/narukana-init` | `--regenerate` | Create `.narukana/` workspace structure |
+| `/narukana-context-create` | `--regenerate` | Create/regenerate `context.md` |
+| `/narukana-ui-spec-create` | `--regenerate` | Create/regenerate `ui.md` |
+| `/narukana-contract-spec-create` | `--regenerate` | Create `contract.json` + `contract-detail.md` |
+| `/narukana-integration-spec-create` | `--regenerate` | Create `integration.md` |
+| `/narukana-plan-create` | `--regenerate` | Generate `plan.md` + `memory.md` |
 
-Flags used in this context:
+**Flag descriptions:**
 
-- No special flags.
+- `--regenerate` — overwrite existing files if they already exist (default: false, will ask before overwriting)
 
-### D) Deep Validation and Sync
+### Task Execution
 
-| Command                         | Purpose                                                       | Typical use                         |
-| ------------------------------- | ------------------------------------------------------------- | ----------------------------------- |
-| `/narukana-ui-validate`          | Checks UI code evidence for declared UI actions               | Implementation audit                |
-| `/narukana-contract-validate`    | Checks backend/contract evidence for declared operations      | Implementation audit                |
-| `/narukana-integration-validate` | Verifies mapping consistency across specs and implementations | End-to-end consistency audit        |
-| `/narukana-sync`                 | Checks required files and suggests next validations           | Before plan generation or execution |
+| Command | Flags | Purpose |
+|---|---|---|
+| `/narukana-execute-task` | `next`, `report`, `status` | Claim, implement, report tasks |
 
-Flags used in this context:
+**Arguments:**
 
-- No special flags.
+- `next` — claim the next eligible task from the plan
+- `report <taskId> <status> <evidence>` — update a task's status (status: `done`, `failed`, `blocked`, `skipped`)
+- `status` — show all task statuses
 
-`/narukana-sync` also reports whether `.narukana/memory.md` exists and whether it is in sync with current `plan.md`.
+### Spec Validation (Structure)
+
+| Command | Flags | Purpose |
+|---|---|---|
+| `/narukana-ui-spec-validate` | none | Check `ui.md` headings and anchor comments |
+| `/narukana-contract-spec-validate` | none | Check `contract.json` has required fields |
+| `/narukana-integration-spec-validate` | none | Check `integration.md` has all required sections |
+
+### Deep Validation (Implementation Evidence)
+
+| Command | Flags | Purpose |
+|---|---|---|
+| `/narukana-ui-validate` | `--source-dir` | Verify UI actions declared in spec exist in source code |
+| `/narukana-contract-validate` | `--source-dir` | Verify contract operations declared in spec exist in source code |
+| `/narukana-integration-validate` | none | Cross-layer consistency check (UI ↔ Contract ↔ Mappings) |
+| `/narukana-sync` | none | Check all required workspace files exist |
+
+**Flag descriptions:**
+
+- `--source-dir` — source directory to scan (default: `src` for UI, `contracts` for contracts)
+
+### Spec from Codebase
+
+| Command | Flags | Purpose |
+|---|---|---|
+| `/narukana-spec-from-codebase-create` | `--regenerate` | Reverse-engineer specs from existing codebase |
+
+**Flag descriptions:**
+
+- `--regenerate` — overwrite existing spec files (default: false, runs in preview mode only)
 
 ---
 
@@ -265,28 +253,35 @@ Flags used in this context:
 
 ```text
 .narukana/
-  narukana.json
+  narukana.json           # workspace config (paths, project name)
   context/
-    context.md
-    idea.md
+    context.md            # project context (goal, constraints, risks)
+    idea.md               # optional idea file
   specs/
-    ui.md
-    contract.json
-    contract-detail.md
-    integration.md
-  plan.md
-  tasks.json
-  memory.md
+    ui.md                 # UI specification
+    contract.json         # contract/API operations
+    contract-detail.md    # human-readable contract details
+    integration.md        # integration mappings
+  plan.md                 # immutable plan (generated)
+  tasks.json              # task ledger (optional, file-based)
+  memory.md               # derived brief for fresh agents
 ```
 
-## Multi-agent consistency guidance
+## Multi-agent consistency
 
-- Treat `memory.md` as a generated brief, not an editable requirements file.
-- Fresh agents should quickly check memory first, then confirm plan/task IDs align.
-- Never move source-of-truth decisions into memory; edit context/specs/plan/tasks instead.
+- All agents share the same `.narukana/` directory.
+- `memory.md` provides a brief for fresh agents (planId, phase, task status).
+- Task state is maintained through shared files — agents claim tasks via `next-task.sh` and report via `report-task.sh`.
+- Always verify the current task state before claiming a new task.
 
-## Development scripts
+## Repository structure
 
-- `bun run typecheck`
-- `bun run build`
-- `bun run build:command`
+```
+Narukana/
+  skills/                 # 15 skill directories (SKILL.md + references/ + scripts/)
+  command/                # 15 router command wrappers
+  assets/                 # logo and banner images
+  .opencode/
+    INSTALL.md            # installation guide
+  README.md
+```
