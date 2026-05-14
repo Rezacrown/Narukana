@@ -35,7 +35,7 @@ It exists to solve a common problem: teams and agents often start coding before 
 
 ```mermaid
 flowchart TD
-  A["Initialize workspace\n(narukana_init)"] --> B["Context\n.narukana/context/context.md"]
+  A["Initialize workspace\n(/narukana-init)"] --> B["Context\n.narukana/context/context.md"]
   B --> C["UI Spec\n.narukana/specs/ui.md"]
   B --> D["Contract Spec\ncontract.json + contract-detail.md"]
   C --> E["Integration Spec\n.narukana/specs/integration.md"]
@@ -73,6 +73,8 @@ This generates:
 
 - `dist/index.js` (actual plugin runtime)
 - `command/*.md` and `src/commands/*.md` (command wrapper docs)
+
+> Wrapper filenames are namespaced and dashed (e.g. `narukana-execute-task.md`), so your OpenCode slash commands will be `/narukana-execute-task`, `/narukana-plan-create`, etc.
 
 ### 2) Register Narukana plugin in OpenCode (Global or Project-only)
 
@@ -131,7 +133,7 @@ bun run build:command
 
 What to verify:
 
-1. `command/` contains files like `init.md`, `plan_create.md`, `execute_task.md`.
+1. `command/` contains files like `narukana-init.md`, `narukana-plan-create.md`, `narukana-execute-task.md`.
 2. Your OpenCode config has `"command": [".../Narukana/command"]`.
 3. OpenCode session is running in this repo/workspace.
 4. Reopen or restart the OpenCode session after regenerating wrappers.
@@ -145,15 +147,15 @@ If `/command` docs still do not show:
 
 ### 4) First practical flow
 
-Run tools in this order:
+Run commands in this order (slash commands via wrapper docs):
 
-1. `narukana_init`
-2. `narukana_context_create`
-3. `narukana_ui_spec_create`
-4. `narukana_contract_spec_create`
-5. `narukana_integration_spec_create`
-6. `narukana_plan_create`
-7. `narukana_execute_task` with `action: "next"`
+1. `/narukana-init`
+2. `/narukana-context-create`
+3. `/narukana-ui-spec-create`
+4. `/narukana-contract-spec-create`
+5. `/narukana-integration-spec-create`
+6. `/narukana-plan-create`
+7. `/narukana-execute-task` (autonomous loop) or `/narukana-execute-task --action next --name "agent-1"`
 
 ---
 
@@ -186,45 +188,47 @@ Narukana's **workflow model** is agent-agnostic (spec files + plan + tasks). The
 
 | Command                            | Purpose                                                     | Typical use                                       |
 | ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
-| `narukana_init`                    | Creates `.narukana/` structure and default files if missing | First setup in a repo                             |
-| `narukana_context_create`          | Creates `context.md`                                        | Define goals, constraints, assumptions            |
-| `narukana_ui_spec_create`          | Creates `ui.md`                                             | Define UI actions, states, and UI data            |
-| `narukana_contract_spec_create`    | Creates `contract.json` and `contract-detail.md`            | Define backend/contract operations                |
-| `narukana_integration_spec_create` | Creates `integration.md`                                    | Define mappings between UI actions and operations |
-| `narukana_plan_create`             | Generates immutable `plan.md` from specs                    | Move from spec phase to execution phase           |
+| `/narukana-init`                    | Creates `.narukana/` structure and default files if missing | First setup in a repo                             |
+| `/narukana-context-create`          | Creates `context.md`                                        | Define goals, constraints, assumptions            |
+| `/narukana-ui-spec-create`          | Creates `ui.md`                                             | Define UI actions, states, and UI data            |
+| `/narukana-contract-spec-create`    | Creates `contract.json` and `contract-detail.md`            | Define backend/contract operations                |
+| `/narukana-integration-spec-create` | Creates `integration.md`                                    | Define mappings between UI actions and operations |
+| `/narukana-plan-create`             | Generates immutable `plan.md` from specs                    | Move from spec phase to execution phase           |
 
 Flags used in this context:
 
 - `regenerate` (boolean)
   - `false` (default): do not overwrite existing files.
   - `true`: overwrite and create backup `*.bak.<timestamp>`.
-- `include` (string, `narukana_context_create` only)
+- `include` (string, `/narukana-context-create` only)
   - Use provided text as the full `context.md` content.
 
 ### B) Task Execution and Coordination
 
 | Command                 | Purpose                                                  | Typical use              |
 | ----------------------- | -------------------------------------------------------- | ------------------------ |
-| `narukana_execute_task` | Claim task, report progress, check status, release lease | Daily execution workflow |
+| `/narukana-execute-task` | Claim task, report progress, check status, release lease, assign by taskId | Daily execution workflow |
 
 Flags used in this context:
 
-- `action` (required)
+- `action` (optional in autonomous loop mode)
   - `next`: claim next eligible task.
+  - `assign`: claim a specific task by `taskId`.
   - `status`: show ledger summary.
   - `report`: update one task status.
   - `release`: release one claimed task.
-- `name` (required for `next`, `report`, `release`): claimer identity (agent/person).
+- `name` (required for `next`, `assign`, `report`, `release`): claimer identity (agent/person).
+- `instruction` (optional): task-level note stored in `tasks.json` for the claiming agent.
 - `leaseMinutes` (optional, default `120`): claim duration.
-- `taskId` (required for `report` and `release`): task ID like `T-001`.
-- `status` (for `report`): `in_progress | done | failed | blocked`.
+- `taskId` (required for `assign`, `report`, and `release`): task ID like `T-001`.
+- `status` (for `report`): `in_progress | done | failed | blocked | skipped`.
 - `fatalReason` (optional): reason when reporting failure.
 - `evidence` (optional): completion evidence.
 
 Memory behavior in execution:
 
-- `narukana_plan_create` writes both `.narukana/plan.md` and `.narukana/memory.md`.
-- `narukana_execute_task` checks memory frontmatter `planId` against current plan hash.
+- `/narukana-plan-create` writes both `.narukana/plan.md` and `.narukana/memory.md`.
+- `/narukana-execute-task` checks memory frontmatter `planId` against current plan hash.
 - If memory is missing, stale, or invalid, Narukana auto-refreshes memory before continuing.
 - Source of truth remains `.narukana/context/*`, `.narukana/specs/*`, `.narukana/plan.md`, and `.narukana/tasks.json`.
 
@@ -232,9 +236,9 @@ Memory behavior in execution:
 
 | Command                              | Purpose                                                 | Typical use                    |
 | ------------------------------------ | ------------------------------------------------------- | ------------------------------ |
-| `narukana_ui_spec_validate`          | Validates UI spec structure and required anchors        | After editing `ui.md`          |
-| `narukana_contract_spec_validate`    | Validates `contract.json` and required operation fields | After editing `contract.json`  |
-| `narukana_integration_spec_validate` | Validates required integration sections                 | After editing `integration.md` |
+| `/narukana-ui-spec-validate`          | Validates UI spec structure and required anchors        | After editing `ui.md`          |
+| `/narukana-contract-spec-validate`    | Validates `contract.json` and required operation fields | After editing `contract.json`  |
+| `/narukana-integration-spec-validate` | Validates required integration sections                 | After editing `integration.md` |
 
 Flags used in this context:
 
@@ -244,16 +248,16 @@ Flags used in this context:
 
 | Command                         | Purpose                                                       | Typical use                         |
 | ------------------------------- | ------------------------------------------------------------- | ----------------------------------- |
-| `narukana_ui_validate`          | Checks UI code evidence for declared UI actions               | Implementation audit                |
-| `narukana_contract_validate`    | Checks backend/contract evidence for declared operations      | Implementation audit                |
-| `narukana_integration_validate` | Verifies mapping consistency across specs and implementations | End-to-end consistency audit        |
-| `narukana_sync`                 | Checks required files and suggests next validations           | Before plan generation or execution |
+| `/narukana-ui-validate`          | Checks UI code evidence for declared UI actions               | Implementation audit                |
+| `/narukana-contract-validate`    | Checks backend/contract evidence for declared operations      | Implementation audit                |
+| `/narukana-integration-validate` | Verifies mapping consistency across specs and implementations | End-to-end consistency audit        |
+| `/narukana-sync`                 | Checks required files and suggests next validations           | Before plan generation or execution |
 
 Flags used in this context:
 
 - No special flags.
 
-`narukana_sync` also reports whether `.narukana/memory.md` exists and whether it is in sync with current `plan.md`.
+`/narukana-sync` also reports whether `.narukana/memory.md` exists and whether it is in sync with current `plan.md`.
 
 ---
 

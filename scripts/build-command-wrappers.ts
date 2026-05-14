@@ -53,7 +53,8 @@ const tools = [
     name: "narukana_plan_create",
     description: "Generate plan.md from specs (context, ui, contract, integration)",
     params: {
-      regenerate: "boolean (default: true) - overwrite existing plan if true",
+      regenerate: "boolean (default: false) - overwrite existing plan if true",
+      instruction: "string (optional) - directive for plan generation (e.g., \"Add dark mode toggle\")",
     },
   },
   {
@@ -66,15 +67,16 @@ const tools = [
   },
   {
     name: "narukana_execute_task",
-    description: "Execute task actions: next, report, status, release",
+    description: "Execute task actions: next, report, status, release, assign",
     params: {
-      action: '"next" | "report" | "status" | "release" - action to perform',
-      name: "string (optional) - name/identifier for the agent claiming the task",
+      action: '"next" | "report" | "status" | "release" | "assign" - action to perform',
+      name: "string (required for next/report/release/assign) - agent identifier",
       leaseMinutes: "number (default: 120) - lease duration in minutes",
-      taskId: "string (required for report/release) - task ID",
+      taskId: "string (required for assign/report/release) - task ID",
       status: '"in_progress" | "done" | "failed" | "blocked" | "skipped" (for report)',
       fatalReason: "string (optional) - reason if task failed fatally",
       evidence: "string (optional) - evidence/completion message",
+      instruction: "string (optional) - user note for the agent claiming this task",
     },
   },
   {
@@ -145,11 +147,24 @@ async function build() {
   await ensureDir(outputDir);
 
   for (const tool of tools) {
+    // Use dashed, prefixed filenames so OpenCode slash commands are namespaced
+    // Example: narukana_execute_task -> narukana-execute-task.md
+    const filename = tool.name.replace(/_/g, "-") + ".md";
+
+    const sourcePath = join(commandsDir, filename);
+
+    // If a custom source wrapper exists, copy it to runtime output.
+    // Otherwise generate a generic wrapper and write it to both locations.
+    if (existsSync(sourcePath)) {
+      const content = await readFile(sourcePath, "utf-8");
+      await writeFile(join(outputDir, filename), content);
+      continue;
+    }
+
     const content = generateWrapper(tool);
-    const filename = tool.name.replace("narukana_", "") + ".md";
 
     // Ship source wrapper (tracked in repo)
-    await writeFile(join(commandsDir, filename), content);
+    await writeFile(sourcePath, content);
 
     // Generated command wrapper (runtime)
     await writeFile(join(outputDir, filename), content);

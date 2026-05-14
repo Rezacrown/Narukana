@@ -2,7 +2,8 @@
 
 Generate plan.md from specs (context, ui, contract, integration)
 **Parameters:**
-- `regenerate`: boolean (default: true) - overwrite existing plan if true
+- `regenerate`: boolean (default: false) - overwrite existing plan if true
+- `instruction`: string (optional) - directive for plan generation (e.g., "Add dark mode toggle")
 
 
 ## Usage
