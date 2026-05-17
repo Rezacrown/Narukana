@@ -32,9 +32,20 @@ Tool mapping: OpenCode (`todowrite`), Claude Code / Cursor (`TodoWrite`), Cline 
 - ONLY track tasks you personally claimed (claimedBy matches your --name)
 - DO NOT import every task from tasks.json into your todos
 
+## Sub-agent coordination
+
+When `--subagent` is used:
+
+- **Pre-claim**: Main agent claims ALL eligible tasks before spawning sub-agents. Prevents race conditions.
+- **Full context**: Sub-agent MUST load `.narukana/memory.md` and relevant spec files before implementing — same knowledge depth as a fresh `narukana-execute-task` session.
+- **Scoped work**: Sub-agent receives exactly one task definition. It does not read or write `tasks.json` — it reports results back to the main agent.
+- **Fallback**: If the platform does not support sub-agent spawning (no Task tool), fall back to normal single-task execution. Do not block.
+- **Reporting**: Sub-agent returns: task ID, status (done/failed), evidence summary, fatalReason (if failed). Main agent writes these to `tasks.json`.
+
 ## Stop conditions
 
 - No eligible tasks remaining
 - User sends new instruction or interrupt
 - Fatal error during implementation
 - All tasks completed → standby and report to user
+- `--parallel`: after one task completes (no auto-loop)

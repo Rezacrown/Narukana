@@ -5,7 +5,7 @@
 <p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-1.7.0-0A7EA4?style=for-the-badge" />
   <img alt="Spec Engine" src="https://img.shields.io/badge/Spec-Engine-F59E0B?style=for-the-badge" />
-  <img alt="Skills" src="https://img.shields.io/badge/Skills-15-22C55E?style=for-the-badge" />
+  <img alt="Skills" src="https://img.shields.io/badge/Skills-18-22C55E?style=for-the-badge" />
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@ Works with any agent (OpenCode, Claude Code, Cursor, etc.) — no plugins, no ru
 
 ## What Narukana does
 
-- Creates and manages a `.narukana/` workspace with OpenCode skills (15 skills in `skills/`).
+- Creates and manages a `.narukana/` workspace with OpenCode skills (18 skills in `skills/`).
 - Treats `.narukana/context/*` and `.narukana/specs/*` as editable source of truth.
 - Generates `.narukana/plan.md` as a derived, immutable artifact.
 - Generates `.narukana/memory.md` as a derived brief for fresh agent sessions.
@@ -188,7 +188,7 @@ brainstorm → commit-idea → context-create → spec-create (UI, contract, int
 4. `/narukana-ui-spec-create` + `/narukana-contract-spec-create` + `/narukana-integration-spec-create` — define specs
 5. `/narukana-ui-spec-validate` + `/narukana-contract-spec-validate` + `/narukana-integration-spec-validate` — validate specs
 6. `/narukana-plan-create` — generate plan and task ledger from specs
-7. `/narukana-execute-task` — execute tasks (multi-agent parallel)
+7. `/narukana-execute-task` — execute tasks (use `--parallel` for multi-instance, `--subagent` for sub-agents, `--tdd` for test-first)
 
 ### Existing project (code already exists)
 ```
@@ -200,7 +200,7 @@ spec-from-codebase → context-create → spec-create → validate → plan-crea
 3. `/narukana-ui-spec-create` + `/narukana-contract-spec-create` + `/narukana-integration-spec-create` — refine specs
 4. `/narukana-ui-spec-validate` + `/narukana-contract-spec-validate` + `/narukana-integration-spec-validate` — validate
 5. `/narukana-plan-create` — generate plan and task ledger
-6. `/narukana-execute-task` — execute tasks
+6. `/narukana-execute-task` — execute tasks (flags: `--parallel`, `--subagent`, `--tdd`)
 
 ---
 
@@ -225,13 +225,14 @@ spec-from-codebase → context-create → spec-create → validate → plan-crea
 
 | Command | Flags | Purpose |
 |---|---|---|
-| `/narukana-execute-task` | `next`, `report`, `status` | Claim, implement, report tasks |
+| `/narukana-execute-task` | `--name`, `--parallel`, `--subagent`, `--tdd` | Claim, implement, report tasks |
 
-**Arguments:**
+**Flag descriptions:**
 
-- `next` — claim the next eligible task from the plan
-- `report <taskId> <status> <evidence>` — update a task's status (status: `done`, `failed`, `blocked`, `skipped`)
-- `status` — show all task statuses
+- `--name <id>` — agent identifier for task claiming (default: "agent")
+- `--parallel` — signal parallel multi-instance mode. Agent asks which task to work on. No auto-loop.
+- `--subagent` — spawn sub-agents for parallel task execution. Available on OpenCode and Claude Code.
+- `--tdd` — use acceptance-test-first (Red-Green-Refactor) per criterion. See `references/tdd-flow.md`.
 
 ### Spec Validation (Structure)
 
@@ -298,8 +299,8 @@ spec-from-codebase → context-create → spec-create → validate → plan-crea
 
 ```
 Narukana/
-  skills/                 # 15 skill directories (SKILL.md + references/ + scripts/)
-  command/                # 15 router command wrappers
+  skills/                 # 18 skill directories (SKILL.md + references/ + scripts/)
+  command/                # 18 router command wrappers
   assets/                 # logo and banner images
   .opencode/
     INSTALL.md            # installation guide

@@ -4,6 +4,9 @@
 
 ### Added (v1.8.0) — Final gap closure
 
+- **New flags for narukana-execute-task**: `--parallel` (multi-instance context, ask before claim), `--subagent` (spawn sub-agents with full context), `--tdd` (acceptance-test-first per criterion)
+- **New reference file**: `references/tdd-flow.md` — Red-Green-Refactor procedure for --tdd
+- **Platform todo tracking**: agent updates its platform's task tracking tool at each lifecycle step (claim → implement → report → next). Only tracks own claimed tasks.
 - **Domain field removed** from contract spec — transport per-operation (http/contract/ws) is sufficient
 - **WebSocket transport** (`ws`) added to contract spec template and validators
 - **Node fallback** added to all JSON-dependent scripts: next-task.sh, report-task.sh, task-status.sh, check-contract-json.sh, check-consistency.sh
