@@ -4,7 +4,7 @@ description: Validates the structure of contract.json and contract-detail.md spe
 ---
 
 ## Detail
-Validates the structure of `contract.json` — checks required fields (name, domain, operations), JSON validity, and transport-specific requirements (HTTP endpoints vs contract targets).
+Validates the structure of `contract.json` — checks required fields (schemaVersion, name, operations), JSON validity, and transport-specific requirements (HTTP endpoints vs contract targets).
 
 **Use when:**
 - After editing `contract.json` to confirm correct format

@@ -65,7 +65,7 @@ Checks workspace integrity by verifying file presence and cross-referencing all 
 **Step 6: Report**
 1. For each check: ✅ passed / ❌ failed / ⚠ warning
 2. For failures: explain the potential impact in plain language
-3. Example: "contract.json missing 'domain' field — plan generation may not know whether this is backend or smart contract"
+3. Example: "contract.json missing 'name' field — plan generation cannot identify the contract"
 
 ## Verification
 - All checks are read-only — no files are modified

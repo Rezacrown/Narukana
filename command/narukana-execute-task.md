@@ -1,6 +1,6 @@
 # /narukana-execute-task
 
-Execute plan tasks via action loop
+Claim, implement, and report plan tasks
 
 Flags: `--name`, `--parallel`, `--subagent`, `--tdd`
 

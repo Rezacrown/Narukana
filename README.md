@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.7.0-0A7EA4?style=for-the-badge" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.8.0-0A7EA4?style=for-the-badge" />
   <img alt="Spec Engine" src="https://img.shields.io/badge/Spec-Engine-F59E0B?style=for-the-badge" />
   <img alt="Skills" src="https://img.shields.io/badge/Skills-18-22C55E?style=for-the-badge" />
 </p>
@@ -44,7 +44,7 @@ flowchart TD
   E --> P["Generate Plan\n.narukana/plan.md (immutable)"]
   P --> M["Memory Brief\n.narukana/memory.md (derived)"]
   P --> T["Task Ledger\nfile-based task state"]
-  T --> X["Execution\nnext / report / status"]
+  T --> X["Execution\nclaim / implement / report"]
   X --> M
 ```
 
@@ -109,7 +109,7 @@ After installing, skills are available as slash commands:
 - `/narukana-init`
 - `/narukana-plan-create`
 - `/narukana-execute-task`
-- ...and 12 more
+- ...and 15 more
 
 You can also pass the `installation.txt` file to Claude Code:
 

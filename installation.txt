@@ -22,14 +22,14 @@ Clone the Narukana repo to your working environment:
 After cloning, you will find:
 
   Narukana/
-    skills/           <-- 15 skill directories, one per command
+    skills/           <-- 18 skill directories, one per command
       narukana-init/
         SKILL.md
         references/
         scripts/
       narukana-context-create/
       ...
-    command/          <-- 15 command wrappers (router files)
+    command/          <-- 18 command wrappers (router files)
     installation.txt  <-- this file
 
 No build step, no dependencies, no configuration needed.
@@ -63,7 +63,7 @@ After copying, skills are available as slash commands:
   /narukana-init
   /narukana-plan-create
   /narukana-execute-task
-  ...and 12 more
+  ...and 15 more
 
 =======================================================================
   STEP 5: Install for Cursor
@@ -101,7 +101,7 @@ References and templates are in the skill's references/ directory.
 Helper scripts are in the skill's scripts/ directory.
 
 =======================================================================
-  SKILL REFERENCE (all 15 commands)
+  SKILL REFERENCE (all 18 commands)
 =======================================================================
 
   Command                    Skill directory
@@ -121,6 +121,9 @@ Helper scripts are in the skill's scripts/ directory.
   /narukana-integration-spec-validate  skills/narukana-integration-spec-validate/
   /narukana-sync              skills/narukana-sync/
   /narukana-spec-from-codebase-create  skills/narukana-spec-from-codebase-create/
+  /narukana-brainstorm     skills/narukana-brainstorm/
+  /narukana-commit-idea    skills/narukana-commit-idea/
+  /narukana-validate       skills/narukana-validate/
 
 =======================================================================
   FIRST WORKFLOW (step by step)
@@ -145,7 +148,7 @@ Helper scripts are in the skill's scripts/ directory.
      → Generate plan and memory from specs
 
   7. Narukana/skills/narukana-execute-task/SKILL.md
-     → Execute tasks (next, report, status)
+     → Execute tasks (use --name, --parallel, --subagent, --tdd flags)
 
 =======================================================================
   END OF INSTRUCTIONS
